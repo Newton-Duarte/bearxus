@@ -91,7 +91,7 @@ This causes **fragmentation, context switching, and lost momentum**.
 
 | Category | Choice |
 | :--- | :--- |
-| Framework | **Next.js (App Router)** |
+| Framework | **Next.js v16 (App Router)** |
 | Language | TypeScript |
 | Database | PostgreSQL + Drizzle ORM |
 | Styling / UI | Tailwind CSS v4 + Shadcn UI components |
