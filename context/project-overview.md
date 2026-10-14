@@ -94,7 +94,7 @@ This causes **fragmentation, context switching, and lost momentum**.
 | Framework | **Next.js v16 (App Router)** |
 | Language | TypeScript |
 | Database | PostgreSQL + Drizzle ORM |
-| Styling / UI | Tailwind CSS v4 + Shadcn UI components |
+| Styling / UI | Tailwind CSS v4 + Shadcn UI components (Base UI) |
 | Auth | NextAuth.js (Secure session cookies) |
 | Deployment | Self-hosted Docker container / Vercel private instance |
 
