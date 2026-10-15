@@ -37,7 +37,7 @@ Use generated migrations for schema changes; do not use `drizzle-kit push`.
 
 ## Authentication setup
 
-Authentication uses NextAuth v5 beta with GitHub OAuth, the existing Drizzle
+Authentication uses NextAuth v5 beta with GitHub OAuth and email/password, the existing Drizzle
 adapter, and JWT session cookies. Keep `DATABASE_URL` pointed at the Neon
 development branch when testing.
 
@@ -62,6 +62,35 @@ and register its `/api/auth/callback/github` URL with GitHub. Auth.js rejects
 untrusted production hosts without the appropriate deployment configuration.
 To smoke-test a local production build, run `pnpm build` followed by
 `AUTH_URL=http://localhost:3000 pnpm start` (stop the dev server first).
+
+### Email/password registration
+
+Register using the JSON API (there is no registration UI yet):
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Test","email":"test@test.com","password":"password123","confirmPassword":"password123"}'
+```
+
+Names are trimmed and must contain 1–100 characters. Emails are trimmed,
+validated (maximum 254 characters), and stored lowercase. Passwords must
+match, contain at least eight characters, and fit within 72 UTF-8 bytes (not
+necessarily 72 characters). Password whitespace is significant. Passwords
+are hashed with bcryptjs at cost 12; plaintext passwords are never stored.
+
+Responses use `{ success, data, error }`: **201** returns the created user's
+ID, name, and email; **400** indicates invalid JSON or input; **409** means
+the email already exists; **500** indicates a server failure. Registration
+does not sign in the user or mark their email as verified.
+
+Open `http://localhost:3000/api/auth/signin?callbackUrl=%2Fdashboard` and use
+the email/password form. Sign-in keeps the same database-backed user ID
+across sessions. GitHub remains available; OAuth-only accounts cannot sign
+in with a password, and registration cannot overwrite an existing account.
+Automatic account linking, password reset, and email verification are not
+implemented. Registration and password sign-in currently have no application
+rate limiting; add abuse protection before exposing them publicly.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
