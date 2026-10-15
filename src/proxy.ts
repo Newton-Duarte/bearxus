@@ -7,8 +7,8 @@ const { auth } = NextAuth(authConfig);
 
 export const proxy = auth((request) => {
   if (!request.auth) {
-    const signInUrl = new URL("/api/auth/signin", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.url);
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set("callbackUrl", `${request.nextUrl.pathname}${request.nextUrl.search}`);
 
     return NextResponse.redirect(signInUrl);
   }

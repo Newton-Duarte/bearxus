@@ -47,7 +47,7 @@ development branch when testing.
    and client secret. Set `AUTH_SECRET` to a securely generated random value
    (at least 32 random bytes); never commit these values.
 3. Run `pnpm dev` and open `http://localhost:3000/dashboard`. Unauthenticated
-   visitors are redirected to NextAuth's default sign-in page.
+   visitors are redirected to the custom `/sign-in` page.
 4. Click **Sign in with GitHub** and complete authorization. You should return
    to `/dashboard`, which displays your database user ID. Signing in again
    with the same account should retain that ID.
@@ -65,7 +65,7 @@ To smoke-test a local production build, run `pnpm build` followed by
 
 ### Email/password registration
 
-Register using the JSON API (there is no registration UI yet):
+Open `/register` to create an account, or use the JSON API:
 
 ```bash
 curl -X POST http://localhost:3000/api/auth/register \
@@ -84,13 +84,20 @@ ID, name, and email; **400** indicates invalid JSON or input; **409** means
 the email already exists; **500** indicates a server failure. Registration
 does not sign in the user or mark their email as verified.
 
-Open `http://localhost:3000/api/auth/signin?callbackUrl=%2Fdashboard` and use
+Successful registration redirects to `/sign-in` with a confirmation message.
+
+Open `http://localhost:3000/sign-in?callbackUrl=%2Fdashboard` and use
 the email/password form. Sign-in keeps the same database-backed user ID
 across sessions. GitHub remains available; OAuth-only accounts cannot sign
 in with a password, and registration cannot overwrite an existing account.
 Automatic account linking, password reset, and email verification are not
 implemented. Registration and password sign-in currently have no application
 rate limiting; add abuse protection before exposing them publicly.
+
+The dashboard sidebar shows the session user's name, email, and GitHub avatar
+or initials. Clicking the account row opens Profile, Settings, and Sign out.
+Sign out clears the session and redirects to `/sign-in`. Profile and Settings
+link to `/profile` and `/settings`; those pages are not implemented in this phase.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

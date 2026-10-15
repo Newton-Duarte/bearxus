@@ -8,6 +8,7 @@ export const credentialsFields = {
 };
 
 export default {
+  pages: { signIn: "/sign-in" },
   providers: [
     GitHub,
     Credentials({

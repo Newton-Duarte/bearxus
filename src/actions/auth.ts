@@ -1,0 +1,55 @@
+"use server";
+
+import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
+
+import { signIn, signOut } from "@/auth";
+import { getAuthRedirect } from "@/lib/auth-redirect";
+import { signInSchema } from "@/lib/auth-validation";
+import type { AuthFormState } from "@/types/auth";
+
+export async function signInWithCredentials(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = signInSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    const fieldErrors: AuthFormState["fieldErrors"] = {};
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0];
+      if (field === "email" || field === "password") fieldErrors[field] ??= issue.message;
+    }
+    return { success: false, data: null, error: "Check your email and password.", fieldErrors };
+  }
+
+  try {
+    await signIn("credentials", {
+      ...parsed.data,
+      redirectTo: getAuthRedirect(formData.get("callbackUrl")),
+    });
+  } catch (error) {
+    if (!(error instanceof AuthError)) throw error;
+    return {
+      success: false,
+      data: null,
+      error: error.type === "CredentialsSignin"
+        ? "Email or password is incorrect. Try again."
+        : "Unable to sign in right now. Please try again.",
+    };
+  }
+
+  return { success: true, data: null, error: null };
+}
+
+export async function signInWithGitHub(formData: FormData): Promise<void> {
+  try {
+    await signIn("github", { redirectTo: getAuthRedirect(formData.get("callbackUrl")) });
+  } catch (error) {
+    if (!(error instanceof AuthError)) throw error;
+    redirect("/sign-in?error=OAuthSignin");
+  }
+}
+
+export async function signOutUser(): Promise<void> {
+  await signOut({ redirectTo: "/sign-in" });
+}

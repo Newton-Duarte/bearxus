@@ -1,18 +1,35 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Auth UI - Sign In, Register & Sign Out
 
 ## Status
 
-Not Started
+Complete
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Replace the default NextAuth sign-in page with a custom `/sign-in` page offering email/password sign-in, GitHub sign-in, a registration link, form validation, and error display.
+- Add a `/register` page with name, email, password, and confirm-password fields; validate email format and matching passwords, submit to `/api/auth/register`, and redirect to sign-in on success.
+- Update the bottom of the sidebar to display the signed-in user's avatar, name, and email.
+- Create a reusable avatar component that uses the user's GitHub image when available and otherwise displays initials derived from their name.
+- Clicking the sidebar avatar opens a dropdown with Profile (`/profile`), Settings (`/settings`), and Sign out.
+- Verify custom page rendering, GitHub and credentials sign-in, avatar rendering, dropdown behavior, sign-out and redirect, and successful registration followed by a sign-in redirect.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Source spec: `context/features/auth-phase-3-spec.md`.
+- Preserve the existing NextAuth GitHub OAuth, credentials authentication, and registration endpoint.
+- Sidebar visual reference: `context/screenshots/bearxus-sidebar-example.jpg` (the source spec includes an extra `src/` prefix).
+- Avatar fallback example: "Newton Duarte" → "ND".
+- User clarification: the sidebar avatar opens a dropdown containing Profile, Settings, and Sign out. Profile navigation belongs in that dropdown, not directly on the avatar.
+- Use the sidebar placement from the requirements and supplied screenshot, not the top-bar placement mentioned in the test list.
+- The current dashboard is a session-check placeholder with no sidebar. Add the minimal sidebar/account area for this phase; Profile and Settings menu links do not include building those pages or unrelated workspace features.
+- Branch: `feature/auth-ui-sign-in-register-sign-out`.
+- Implementation plan: `docs/superpowers/plans/2026-10-15-auth-phase-3.md`.
+- Implemented natively on the existing branch: custom auth pages, validated forms, protected custom redirects, reusable avatar, and sidebar account dropdown.
+- Verification: build, lint, TypeScript, whitespace checks, 116 development browser assertions, and 48 local production-build assertions passed. Independent review findings fixed with failing-then-passing regressions for registration restoration, unique field IDs, and encoded callback queries.
+- User-confirmed acceptance: real GitHub sign-in/sign-out/repeat sign-in preserves avatar/details and the same user ID. The user also confirmed creating and signing in with a separate demo credentials account. Credentials are intentionally not recorded here.
+- Requested pre-completion review: no blocking findings, missing approved goals, or scope creep. Fresh build, lint, TypeScript, whitespace checks, and 93 browser assertions passed; manual acceptance is recorded above. User subsequently authorized completion via `/feature complete`.
+- Nonblocking review finding: a failed sign-in Server Action transport request uses Next.js global error recovery rather than an inline retry message (`src/components/auth/SignInForm.tsx`). Reproduced by aborting the POST; deferred without product changes during this review.
+- No schema changes, production database operations, or data deletions. Test accounts and scratch evidence are retained in development/local storage.
 
 ## History
 

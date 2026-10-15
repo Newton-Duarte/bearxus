@@ -2,15 +2,15 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { auth } from "@/auth";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 export default function DashboardPage() {
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <Suspense fallback={<p className="mt-2">Checking your session…</p>}>
+    <div className="workspace-theme min-h-svh bg-background font-sans text-foreground">
+      <Suspense fallback={<p role="status" className="p-6 text-sm text-muted-foreground">Checking your session…</p>}>
         <DashboardSession />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
@@ -18,8 +18,23 @@ async function DashboardSession() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/api/auth/signin?callbackUrl=%2Fdashboard");
+    redirect("/sign-in?callbackUrl=%2Fdashboard");
   }
 
-  return <p className="mt-2">User ID: {session.user.id}</p>;
+  const user = {
+    name: session.user.name ?? null,
+    email: session.user.email ?? null,
+    image: session.user.image ?? null,
+  };
+
+  return (
+    <div className="flex min-h-svh flex-col md:flex-row">
+      <Sidebar user={user} />
+      <main className="min-w-0 flex-1 px-6 py-10 sm:px-10 md:py-12">
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="mt-3 text-sm leading-6 wrap-anywhere text-muted-foreground">Welcome to your workspace{user.name?.trim() ? `, ${user.name.trim()}` : ""}.</p>
+        <p className="mt-10 border-t border-border pt-6 font-mono text-xs break-all text-muted-foreground">User ID: {session.user.id}</p>
+      </main>
+    </div>
+  );
 }
