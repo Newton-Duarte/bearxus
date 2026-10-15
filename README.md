@@ -35,6 +35,34 @@ pnpm db:migrate
 
 Use generated migrations for schema changes; do not use `drizzle-kit push`.
 
+## Authentication setup
+
+Authentication uses NextAuth v5 beta with GitHub OAuth, the existing Drizzle
+adapter, and JWT session cookies. Keep `DATABASE_URL` pointed at the Neon
+development branch when testing.
+
+1. Create a GitHub OAuth App with homepage URL `http://localhost:3000` and
+   authorization callback URL `http://localhost:3000/api/auth/callback/github`.
+2. Set `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` in `.env` to the app's client ID
+   and client secret. Set `AUTH_SECRET` to a securely generated random value
+   (at least 32 random bytes); never commit these values.
+3. Run `pnpm dev` and open `http://localhost:3000/dashboard`. Unauthenticated
+   visitors are redirected to NextAuth's default sign-in page.
+4. Click **Sign in with GitHub** and complete authorization. You should return
+   to `/dashboard`, which displays your database user ID. Signing in again
+   with the same account should retain that ID.
+
+`/dashboard` and its nested paths are protected by `src/proxy.ts`. The dashboard
+also checks the session on the server; future data access and mutations must
+verify authentication and ownership at the point of access, not rely on proxy
+alone. `/api/auth/session` exposes the authenticated session's `user.id`.
+
+For self-hosted production, set `AUTH_URL` to the deployment's public origin
+and register its `/api/auth/callback/github` URL with GitHub. Auth.js rejects
+untrusted production hosts without the appropriate deployment configuration.
+To smoke-test a local production build, run `pnpm build` followed by
+`AUTH_URL=http://localhost:3000 pnpm start` (stop the dev server first).
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
