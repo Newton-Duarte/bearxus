@@ -18,6 +18,23 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Database setup
+
+Copy `.env.example` to `.env` and set `DATABASE_URL` to the Neon development branch:
+
+```bash
+cp .env.example .env
+```
+
+When the schema changes, generate a migration and apply it:
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+```
+
+Use generated migrations for schema changes; do not use `drizzle-kit push`.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
