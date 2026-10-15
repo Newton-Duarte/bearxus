@@ -57,8 +57,10 @@ export type ActivityMetadata = Record<string, unknown>;
 const timestampWithTimezone = (name: string) =>
   timestamp(name, { withTimezone: true, mode: "date" })
     .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date());
+    .defaultNow();
+
+const updatedTimestampWithTimezone = (name: string) =>
+  timestampWithTimezone(name).$onUpdate(() => new Date());
 
 export const projects = pgTable(
   "projects",
@@ -73,7 +75,7 @@ export const projects = pgTable(
     status: projectStatusEnum("status").notNull().default("active"),
     progress: integer("progress").notNull().default(0),
     createdAt: timestampWithTimezone("created_at"),
-    updatedAt: timestampWithTimezone("updated_at"),
+    updatedAt: updatedTimestampWithTimezone("updated_at"),
   },
   (table) => [
     unique("projects_id_user_id_unique").on(table.id, table.userId),
@@ -136,7 +138,7 @@ export const tasks = pgTable(
     priority: text("priority").notNull(),
     dueDate: pgDate("due_date"),
     createdAt: timestampWithTimezone("created_at"),
-    updatedAt: timestampWithTimezone("updated_at"),
+    updatedAt: updatedTimestampWithTimezone("updated_at"),
   },
   (table) => [
     foreignKey({
@@ -172,7 +174,7 @@ export const notes = pgTable(
     content: text("content").notNull(),
     tags: text("tags").array().notNull().default(sql`ARRAY[]::text[]`),
     createdAt: timestampWithTimezone("created_at"),
-    updatedAt: timestampWithTimezone("updated_at"),
+    updatedAt: updatedTimestampWithTimezone("updated_at"),
   },
   (table) => [
     unique("notes_id_user_id_unique").on(table.id, table.userId),
@@ -232,7 +234,7 @@ export const learningResources = pgTable(
       .default("to-start"),
     progressPct: integer("progress_pct").notNull().default(0),
     createdAt: timestampWithTimezone("created_at"),
-    updatedAt: timestampWithTimezone("updated_at"),
+    updatedAt: updatedTimestampWithTimezone("updated_at"),
   },
   (table) => [
     unique("learning_resources_id_user_id_unique").on(
