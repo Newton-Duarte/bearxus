@@ -26,7 +26,7 @@ Read the following to get the full context of the project:
 
 ## Neon Database
 
-- Project: `bearxus-dev` (ID: `TODO...`)
-- **Always use the development branch** (`TODO...`) for all database operations
-- Production branch (`TODO...`) is OFF LIMITS unless explicitly requested
+- Project: `bearxus-dev` (ID: `br-lucky-star-b584yeor`)
+- **Always use the development branch** (`ep-silent-bird-b59kwhec`) for all database operations
+- Production branch is OFF LIMITS unless explicitly requested
 - When running queries, migrations, or any database operations, always pass the development branch ID
