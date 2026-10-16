@@ -1,27 +1,16 @@
-# Current Feature: Rate Limiting for Auth
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add serverless-compatible rate limiting to the authentication endpoints.
-- Use Upstash Redis with `@upstash/ratelimit` and a reusable `src/lib/rate-limit.ts` utility.
-- Apply the specified sliding-window limits keyed by IP and, where applicable, email.
-- Return `429 Too Many Requests` responses with a user-friendly error, `Retry-After`, and rate-limit metadata.
-- Display rate-limit errors clearly on the frontend.
-- Fail open when Upstash is unavailable.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Protect `/api/auth/callback/credentials` (5 attempts/15 minutes, IP + email), `/api/auth/register` (3/hour, IP), `/api/auth/forgot-password` (3/hour, IP), `/api/auth/reset-password` (5/15 minutes, IP), and `/api/auth/resend-verification` (3/15 minutes, IP + email).
-- Extract IP from `x-forwarded-for` or the request and combine it with email identifiers where specified.
-- Required environment variables: `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
-- NextAuth credentials login may require a custom sign-in handler; middleware is a possible later refinement.
-- 2026-10-16 implementation: added lazy Upstash sliding-window limiting with fail-open behavior, IP/email keys, 429 JSON responses, and `Retry-After` headers for registration, credentials login, password recovery, and verification resend. Added JSON recovery/verification route boundaries and migrated the three forms to accessible fetch-based feedback while retaining Server Action guards.
-- 2026-10-16 verification: utility contract checks, live development Upstash HTTP limit checks, neutral unknown-email responses, mixed-case email bucket checks, unavailable-Upstash fail-open checks, desktop/320px browser checks, `pnpm lint`, `pnpm build`, `pnpm exec tsc --noEmit`, and `git diff --check` are passing. No database migration or Neon operation was needed. Real provider delivery and production Upstash behavior remain unverified.
-- 2026-10-16 follow-up: Upstash sliding-window bucket resets could report only the remaining portion of a policy window (for example, 10 of 15 minutes). Denied decisions now expose the configured full cooldown for user messaging, `Retry-After`, and frontend countdowns: 15 minutes for login/reset/resend and 60 minutes for registration/forgot-password.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -36,3 +25,4 @@ In Progress
 - 2026-10-16: Added forgot-password recovery with hashed 24-hour single-use tokens, pending/ready delivery gating, neutral recovery responses, Resend email delivery, accessible forgot/reset pages, sign-in integration, token-history/referrer protections, and controlled failure handling. Applied migrations 0002 and 0003 only to development branch `ep-silent-bird-b59kwhec`. Verified lifecycle/action/page/integration checks, development-fixture pending/ready/replay behavior with original hash restoration, review regressions, lint, build, TypeScript, no schema drift, and clean runtime shutdown. Real inbox delivery, global/IP throttling, and callback preservation remain unverified/deferred. Implementation and evidence: `docs/superpowers/plans/2026-10-16-forgot-password-recovery.md`.
 - 2026-10-16: Added the protected `/profile` page with account identity, GitHub-or-initials avatar fallback, account creation date, five user-scoped usage stats, credentials-only password changes, and accessible modal account deletion confirmation. Verified lint, TypeScript, production build, diff checks, protected redirects, live development-fixture password lifecycle, sign-out/sign-in, responsive 320px layout, keyboard focus, and no profile console errors. Account deletion was not executed; the existing dashboard crypto prerender warning remains deferred.
 - 2026-10-16: Refined the profile password-change UX to match the existing auth forms: generic errors are top-of-form focusable alerts, controlled fields preserve values across validation/server errors, sensitive values clear when the dialog closes, and modal scroll chaining is contained. Verified browser preservation/error checks, lint, TypeScript, production build, and diff checks.
+- 2026-10-16: Added Upstash Redis sliding-window rate limiting with fail-open behavior for registration, credentials login, password recovery, and verification resend; added 429/`Retry-After` API responses, protected retained Server Actions, and accessible frontend retry feedback. Denied requests use the configured full cooldown (15 minutes or 60 minutes) rather than the remaining sliding-window bucket. Verified live development HTTP/browser limits, neutral responses, mixed-case key normalization, fail-open behavior, cooldown messages/countdowns, lint, build, TypeScript, and diff checks. No database migration was needed; real provider delivery and production Upstash behavior remain unverified.
