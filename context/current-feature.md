@@ -1,29 +1,16 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a protected `/profile` route.
-- Display the user’s email, name, avatar, and account creation date.
-- Show usage totals for notes, projects, tasks, resources, and transactions.
-- Provide a change-password action for email/password users only.
-- Provide account deletion with a confirmation dialog.
-- Follow existing data-fetching and component patterns.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Use the GitHub avatar when available; otherwise generate initials from the user’s name or email.
-- Hide the change-password action for GitHub OAuth users.
-- Require confirmation before deleting an account.
-- Source spec: `context/features/profile-page-spec.md`.
-- Implementation plan: `docs/superpowers/plans/2026-10-16-profile-page.md`.
-- Verification: `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm build`, and `git diff --check` pass.
-- Browser verification: protected redirect, profile identity/stats, credentials password failure and success, sign-out/sign-in with the updated password, delete confirmation, keyboard focus, and 320px layout passed against a development fixture. Account deletion was not submitted.
-- The temporary development credentials fixture remains for review; no production database operation or real account deletion was performed.
-- Profile uses Next.js `connection()` to avoid its Cache Components crypto prerender warning. The existing dashboard still shows that pre-existing warning and was not changed.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -36,3 +23,4 @@ In Progress
 - 2026-10-15: Added custom sign-in/registration pages and a responsive sidebar account dropdown with reusable image/initials avatar. Verified build, lint, types, 164 initial browser assertions, 93 post-review/post-merge assertions, independent reviews, and user-confirmed GitHub/credentials acceptance. Deferred inline recovery for interrupted sign-in requests.
 - 2026-10-16: Added Resend registration verification with hashed 24-hour single-use links, atomic verification, 60-second resend cooldown, neutral recovery responses, configurable automatic verification, and silent disabled-page redirects. Added development-only demo-preserving user cleanup with dry-run default. Verified build, lint, types, zero migration drift, 61 backend checks, 27 browser checks, 15 simulated cleanup safety checks, and independent reviews. Mail transport was stubbed; real inbox delivery, full live GitHub OAuth, and live cleanup execution remain unverified. Deferred minor: Resend SDK provider-error logging in development. Implementation and evidence: docs/superpowers/plans/2026-10-15-email-verification-on-registration.md.
 - 2026-10-16: Added forgot-password recovery with hashed 24-hour single-use tokens, pending/ready delivery gating, neutral recovery responses, Resend email delivery, accessible forgot/reset pages, sign-in integration, token-history/referrer protections, and controlled failure handling. Applied migrations 0002 and 0003 only to development branch `ep-silent-bird-b59kwhec`. Verified lifecycle/action/page/integration checks, development-fixture pending/ready/replay behavior with original hash restoration, review regressions, lint, build, TypeScript, no schema drift, and clean runtime shutdown. Real inbox delivery, global/IP throttling, and callback preservation remain unverified/deferred. Implementation and evidence: `docs/superpowers/plans/2026-10-16-forgot-password-recovery.md`.
+- 2026-10-16: Added the protected `/profile` page with account identity, GitHub-or-initials avatar fallback, account creation date, five user-scoped usage stats, credentials-only password changes, and accessible modal account deletion confirmation. Verified lint, TypeScript, production build, diff checks, protected redirects, live development-fixture password lifecycle, sign-out/sign-in, responsive 320px layout, keyboard focus, and no profile console errors. Account deletion was not executed; the existing dashboard crypto prerender warning remains deferred.
