@@ -10,7 +10,7 @@ import { registrationSchema } from "@/lib/auth-validation";
 import type { AuthFormState } from "@/types/auth";
 
 const responseSchema = z.discriminatedUnion("success", [
-  z.object({ success: z.literal(true), data: z.object({ id: z.string(), name: z.string().nullable(), email: z.string() }), error: z.null() }),
+  z.object({ success: z.literal(true), data: z.object({ id: z.string(), name: z.string().nullable(), email: z.string(), verificationEmailSent: z.boolean(), verificationRequired: z.boolean() }), error: z.null() }),
   z.object({ success: z.literal(false), data: z.null(), error: z.string() }),
 ]);
 
@@ -54,7 +54,10 @@ export function RegisterForm() {
       if (response.status === 201 && result.success && result.data.success) {
         submitting.current = false;
         setPending(false);
-        startNavigation(() => router.push("/sign-in?registered=1"));
+        const status = result.data.data.verificationEmailSent ? "sent" : "delivery-failed";
+        const destination = result.data.data.verificationRequired
+          ? `/verify-email?status=${status}` : "/sign-in?registered=1";
+        startNavigation(() => router.push(destination));
         return;
       }
       const error = result.success && !result.data.success ? result.data.error : "Unable to register. Please try again.";

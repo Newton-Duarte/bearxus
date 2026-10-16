@@ -4,6 +4,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { signIn, signOut } from "@/auth";
+import { EmailNotVerifiedError } from "@/lib/auth-errors";
 import { getAuthRedirect } from "@/lib/auth-redirect";
 import { signInSchema } from "@/lib/auth-validation";
 import type { AuthFormState } from "@/types/auth";
@@ -29,6 +30,13 @@ export async function signInWithCredentials(
     });
   } catch (error) {
     if (!(error instanceof AuthError)) throw error;
+    if (error instanceof EmailNotVerifiedError) {
+      return {
+        success: false, data: null,
+        error: "Verify your email before signing in. You can request a new verification link.",
+        requiresEmailVerification: true,
+      };
+    }
     return {
       success: false,
       data: null,

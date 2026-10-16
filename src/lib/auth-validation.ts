@@ -8,8 +8,11 @@ const passwordSchema = z
     error: "Password must not exceed 72 UTF-8 bytes.",
   });
 
-export const signInSchema = z.object({
+export const verificationEmailSchema = z.object({
   email: z.string().trim().max(254).toLowerCase().pipe(z.email()),
+});
+
+export const signInSchema = verificationEmailSchema.extend({
   password: passwordSchema,
 });
 

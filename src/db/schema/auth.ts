@@ -123,3 +123,12 @@ export const verificationTokens = pgTable(
     index("verification_tokens_expires_idx").on(table.expires),
   ],
 );
+
+export const emailVerifications = pgTable("email_verifications", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
+  lastSentAt: timestamp("last_sent_at", { withTimezone: true, mode: "date" }).notNull(),
+});

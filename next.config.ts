@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
+  logging: {
+    incomingRequests: { ignore: [/\/api\/auth\/verify-email(?:\?|$)/] },
+    serverFunctions: false,
+  },
   turbopack: {
     rules: {
       "*.css": {

@@ -4,10 +4,12 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { registrationSchema } from "@/lib/auth-validation";
+import { requestEmailVerification } from "@/lib/email-verification";
+import { isEmailVerificationEnabled } from "@/lib/email-verification-config";
 
 interface RegistrationResponse {
   success: boolean;
-  data: { id: string; name: string | null; email: string } | null;
+  data: { id: string; name: string | null; email: string; verificationEmailSent: boolean; verificationRequired: boolean } | null;
   error: string | null;
 }
 
@@ -39,14 +41,25 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const passwordHash = await hash(password, 12);
-    const [user] = await db.insert(users).values({ name, email, passwordHash })
+    const verificationRequired = isEmailVerificationEnabled();
+    const [user] = await db.insert(users).values({
+      name, email, passwordHash, emailVerified: verificationRequired ? null : new Date(),
+    })
       .onConflictDoNothing({ target: users.email })
       .returning({ id: users.id, name: users.name, email: users.email });
     if (!user) {
       return respond({ success: false, data: null, error: "Email is already registered." }, 409);
     }
 
-    return respond({ success: true, data: user, error: null }, 201);
+    let verificationEmailSent = false;
+    if (verificationRequired) {
+      try {
+        verificationEmailSent = (await requestEmailVerification(email)).status === "sent";
+      } catch {
+        // Account creation succeeded; allow recovery through the resend flow.
+      }
+    }
+    return respond({ success: true, data: { ...user, verificationEmailSent, verificationRequired }, error: null }, 201);
   } catch {
     return respond({ success: false, data: null, error: "Unable to register. Please try again." }, 500);
   }
