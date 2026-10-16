@@ -27,7 +27,7 @@ export async function changePassword(
         fieldErrors[field] ??= issue.message;
       }
     }
-    return { success: false, error: "Check the password fields below.", fieldErrors };
+    return { success: false, error: "Check the highlighted fields and try again.", fieldErrors };
   }
 
   try {

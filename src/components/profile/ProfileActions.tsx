@@ -17,10 +17,14 @@ interface ProfileActionsProps {
 export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordState, passwordAction] = useActionState<ChangePasswordState, FormData>(
     changePassword,
     initialChangePasswordState,
   );
+  const alertRef = useRef<HTMLParagraphElement>(null);
   const passwordDialogRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
   const passwordTitleId = useId();
@@ -45,8 +49,19 @@ export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
   }, [passwordOpen]);
 
   useEffect(() => {
+    if (passwordState.error) alertRef.current?.focus();
+  }, [passwordState.error]);
+
+  useEffect(() => {
     if (deleteOpen) deleteDialogRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
   }, [deleteOpen]);
+
+  function closePasswordDialog() {
+    setPasswordOpen(false);
+    setCurrentPassword("");
+    setPassword("");
+    setConfirmPassword("");
+  }
 
   return (
     <div className="mt-6 divide-y divide-border rounded-xl border border-border bg-card">
@@ -95,9 +110,9 @@ export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
           aria-labelledby={passwordTitleId}
           onCancel={(event) => {
             event.preventDefault();
-            setPasswordOpen(false);
+            closePasswordDialog();
           }}
-          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-black/70"
+          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg overscroll-contain rounded-2xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-black/70"
         >
           <div className="p-6 sm:p-7">
             <div className="flex items-start justify-between gap-4">
@@ -108,18 +123,23 @@ export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
               <button
                 type="button"
                 aria-label="Close change password dialog"
-                onClick={() => setPasswordOpen(false)}
+                onClick={closePasswordDialog}
                 className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <span aria-hidden="true" className="text-xl leading-none">×</span>
               </button>
             </div>
             <form action={passwordAction} className="mt-6 space-y-5">
+              {passwordState.error ? (
+                <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{passwordState.error}</p>
+              ) : null}
               <AuthField
                 name="currentPassword"
                 label="Current password"
                 type="password"
                 autoComplete="current-password"
+                value={currentPassword}
+                onChange={event => setCurrentPassword(event.target.value)}
                 error={passwordState.fieldErrors?.currentPassword}
               />
               <AuthField
@@ -127,6 +147,8 @@ export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
                 label="New password"
                 type="password"
                 autoComplete="new-password"
+                value={password}
+                onChange={event => setPassword(event.target.value)}
                 error={passwordState.fieldErrors?.password}
               />
               <AuthField
@@ -134,18 +156,17 @@ export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
                 label="Confirm new password"
                 type="password"
                 autoComplete="new-password"
+                value={confirmPassword}
+                onChange={event => setConfirmPassword(event.target.value)}
                 error={passwordState.fieldErrors?.confirmPassword}
               />
               {passwordState.success ? (
                 <p role="status" aria-live="polite" className="text-sm text-primary">Password updated. You can close this dialog.</p>
               ) : null}
-              {passwordState.error ? (
-                <p role="alert" aria-live="assertive" className="text-sm text-destructive">{passwordState.error}</p>
-              ) : null}
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  onClick={() => setPasswordOpen(false)}
+                  onClick={closePasswordDialog}
                   className="min-h-11 rounded-lg px-4 text-sm font-medium hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   Cancel
@@ -165,7 +186,7 @@ export function ProfileActions({ canChangePassword }: ProfileActionsProps) {
             event.preventDefault();
             setDeleteOpen(false);
           }}
-          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-black/70"
+          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg overscroll-contain rounded-2xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-black/70"
         >
           <div className="p-6 sm:p-7">
             <h2 id={deleteTitleId} className="text-xl font-semibold tracking-tight">Delete your account?</h2>
