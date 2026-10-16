@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Profile Page
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Create a protected `/profile` route.
+- Display the user’s email, name, avatar, and account creation date.
+- Show usage totals for notes, projects, tasks, resources, and transactions.
+- Provide a change-password action for email/password users only.
+- Provide account deletion with a confirmation dialog.
+- Follow existing data-fetching and component patterns.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Use the GitHub avatar when available; otherwise generate initials from the user’s name or email.
+- Hide the change-password action for GitHub OAuth users.
+- Require confirmation before deleting an account.
+- Source spec: `context/features/profile-page-spec.md`.
+- Implementation plan: `docs/superpowers/plans/2026-10-16-profile-page.md`.
+- Verification: `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm build`, and `git diff --check` pass.
+- Browser verification: protected redirect, profile identity/stats, credentials password failure and success, sign-out/sign-in with the updated password, delete confirmation, keyboard focus, and 320px layout passed against a development fixture. Account deletion was not submitted.
+- The temporary development credentials fixture remains for review; no production database operation or real account deletion was performed.
+- Profile uses Next.js `connection()` to avoid its Cache Components crypto prerender warning. The existing dashboard still shows that pre-existing warning and was not changed.
 
 ## History
 

@@ -6,12 +6,14 @@ import { useState } from "react";
 interface UserAvatarProps {
   name: string | null;
   image: string | null;
+  email?: string | null;
   className?: string;
 }
 
-export function UserAvatar({ name, image, className = "" }: UserAvatarProps) {
+export function UserAvatar({ name, image, email, className = "" }: UserAvatarProps) {
   const [failedImage, setFailedImage] = useState<string | null>(null);
-  const parts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
+  const source = name?.trim() || email?.trim() || "";
+  const parts = source.split(/\s+/).filter(Boolean);
   const initials = parts.length
     ? [parts[0], ...(parts.length > 1 ? parts.slice(-1) : [])]
       .map(part => Array.from(part)[0]).join("").toUpperCase()
