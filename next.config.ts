@@ -6,9 +6,16 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   reactCompiler: true,
   logging: {
-    incomingRequests: { ignore: [/\/api\/auth\/verify-email(?:\?|$)/] },
+    incomingRequests: { ignore: [/\/api\/auth\/verify-email(?:\?|$)/, /\/reset-password(?:\?|$)/] },
     serverFunctions: false,
   },
+  headers: async () => [{
+    source: "/reset-password",
+    headers: [
+      { key: "Cache-Control", value: "no-store" },
+      { key: "Referrer-Policy", value: "no-referrer" },
+    ],
+  }],
   turbopack: {
     rules: {
       "*.css": {

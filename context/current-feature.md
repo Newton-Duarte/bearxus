@@ -1,18 +1,31 @@
-# Current Feature
+# Current Feature: Forgot Password Recovery
 
 <!-- Feature Name -->
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Add a visible Forgot password link to the existing credentials sign-in flow.
+- Let users request a password-reset email using their email address.
+- Send secure, single-use, time-limited reset links without revealing whether an account exists.
+- Let users choose and confirm a new password from the reset link.
+- Preserve existing GitHub OAuth and credentials authentication behavior.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Implement within the existing Next.js App Router, NextAuth, Drizzle, and Resend patterns.
+- Use the existing email delivery configuration and hashed token storage conventions where applicable.
+- Validate email and password inputs server-side and provide user-friendly form feedback.
+- Default flow assumption: reset links expire after 24 hours and become invalid after successful use.
+- Do not add unrelated account-management features.
+- Added a separate `password_resets` table with migrations `drizzle/0002_amusing_moondragon.sql` and `drizzle/0003_marvelous_kang.sql`; both applied only to development branch `ep-silent-bird-b59kwhec`.
+- Added neutral request/completion Server Actions, Resend reset delivery, responsive forgot/reset pages, single-use atomic token consumption, and the sign-in recovery link/status.
+- Verified scratch lifecycle/action/page/integration checks, live unknown-account neutral feedback, invalid-token handling, temporary-fixture reset/replay behavior with original hash restoration, lint, build, TypeScript, whitespace, and zero migration drift. Real inbox delivery remains user-assisted/unverified.
+- Hardened delivery failure handling with pending/ready token states, added `no-referrer` reset-page metadata, and rejected unusable tokens before bcrypt work. Deferred uniform timing and callback URL preservation as out of scope for this feature.
+- Review hardening added no-store/referrer response headers, reset-route log suppression, browser-history token scrubbing, and controlled unexpected-failure feedback. Global/IP throttling remains a future security-hardening task.
 
 ## History
 

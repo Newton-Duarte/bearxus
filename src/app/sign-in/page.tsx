@@ -29,5 +29,5 @@ async function SignInContent({ searchParams }: Pick<PageProps<"/sign-in">, "sear
       : "Unable to sign in. Please try again or choose another sign-in method."
     : undefined;
 
-  return <SignInForm callbackUrl={getAuthRedirect(params.callbackUrl)} oauthError={oauthError} verified={params.verified === "1"} registered={params.registered === "1"} verificationRequired={verificationRequired} />;
+  return <SignInForm callbackUrl={getAuthRedirect(params.callbackUrl)} oauthError={oauthError} verified={params.verified === "1"} registered={params.registered === "1"} passwordReset={params.reset === "1"} verificationRequired={verificationRequired} />;
 }

@@ -15,6 +15,20 @@
       "when": 1792106808400,
       "tag": "0001_cultured_slapstick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792148548522,
+      "tag": "0002_amusing_moondragon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792150049741,
+      "tag": "0003_marvelous_kang",
+      "breakpoints": true
     }
   ]
 }

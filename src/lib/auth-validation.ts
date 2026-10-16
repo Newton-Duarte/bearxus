@@ -25,3 +25,16 @@ export const registrationSchema = signInSchema
     error: "Passwords do not match.",
     path: ["confirmPassword"],
   });
+
+export const passwordResetRequestSchema = verificationEmailSchema;
+
+export const passwordResetSchema = z
+  .object({
+    token: z.string().regex(/^[a-f0-9]{64}$/, "This reset link is invalid."),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
+  })
+  .refine((input) => input.password === input.confirmPassword, {
+    error: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });

@@ -1,0 +1,1 @@
+ALTER TABLE "password_resets" ADD COLUMN "delivery_status" text DEFAULT 'pending' NOT NULL;
