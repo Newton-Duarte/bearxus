@@ -1,6 +1,7 @@
 "use server";
 
 import { hash } from "bcryptjs";
+import { headers } from "next/headers";
 
 import {
   isUsablePasswordResetToken,
@@ -8,6 +9,7 @@ import {
   resetPasswordToken,
 } from "@/lib/password-reset";
 import { passwordResetRequestSchema, passwordResetSchema } from "@/lib/auth-validation";
+import { checkAuthRateLimit, getRateLimitMessage, getRetryAfterSeconds } from "@/lib/rate-limit";
 import type {
   PasswordResetFormState,
   PasswordResetRequestState,
@@ -30,6 +32,11 @@ export async function requestPasswordReset(
     };
   }
 
+  const rateLimit = await checkAuthRateLimit("forgot-password", await headers());
+  if (!rateLimit.success) {
+    return { success: false, data: { retryAfterSeconds: getRetryAfterSeconds(rateLimit) }, error: getRateLimitMessage(rateLimit) };
+  }
+
   try {
     const result = await issuePasswordReset(parsed.data.email);
     return { success: true, data: { retryAfterSeconds: result.retryAfterSeconds }, error: null };
@@ -42,6 +49,11 @@ export async function completePasswordReset(
   _previous: PasswordResetFormState,
   formData: FormData,
 ): Promise<PasswordResetFormState> {
+  const rateLimit = await checkAuthRateLimit("reset-password", await headers());
+  if (!rateLimit.success) {
+    return { success: false, data: null, error: getRateLimitMessage(rateLimit) };
+  }
+
   const parsed = passwordResetSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     const tokenIssue = parsed.error.issues.some(issue => issue.path[0] === "token");

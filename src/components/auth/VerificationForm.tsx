@@ -1,17 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { z } from "zod";
 
-import { resendVerificationEmail } from "@/actions/email-verification";
 import { AuthField } from "@/components/auth/AuthField";
 import type { VerificationFormState } from "@/types/email-verification";
 
 const initialState: VerificationFormState = { success: false, data: null, error: null };
+const responseSchema = z.object({
+  success: z.boolean(),
+  data: z.object({ retryAfterSeconds: z.number() }).nullable(),
+  error: z.string().nullable(),
+});
+const rateLimitResponseSchema = z.object({ error: z.string() });
 
 export function VerificationForm() {
   const [state, setState] = useState(initialState);
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const submitting = useRef(false);
   const alertRef = useRef<HTMLParagraphElement>(null);
@@ -30,18 +36,34 @@ export function VerificationForm() {
     event.preventDefault();
     if (submitting.current || secondsLeft > 0) return;
     submitting.current = true;
+    setPending(true);
     const formData = new FormData(event.currentTarget);
-    startTransition(async () => {
+    void (async () => {
       try {
-        const result = await resendVerificationEmail(initialState, formData);
-        setState(result);
-        setSecondsLeft(result.data?.retryAfterSeconds ?? 0);
+        const response = await fetch("/api/auth/resend-verification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.get("email") }),
+        });
+        const body: unknown = await response.json();
+        if (response.status === 429) {
+          const result = rateLimitResponseSchema.safeParse(body);
+          const retryAfterSeconds = Number(response.headers.get("Retry-After")) || 60;
+          setSecondsLeft(retryAfterSeconds);
+          setState({ success: false, data: { retryAfterSeconds }, error: result.success ? result.data.error : "Too many attempts. Please try again later." });
+        } else {
+          const result = responseSchema.safeParse(body);
+          if (!result.success) throw new Error("Invalid response");
+          setState(result.data);
+          setSecondsLeft(result.data.data?.retryAfterSeconds ?? 0);
+        }
       } catch {
         setState({ success: false, data: null, error: "Unable to send. Check your connection and try again." });
       } finally {
         submitting.current = false;
+        setPending(false);
       }
-    });
+    })();
   }
 
   return (

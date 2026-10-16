@@ -1,16 +1,27 @@
-# Current Feature
+# Current Feature: Rate Limiting for Auth
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Add serverless-compatible rate limiting to the authentication endpoints.
+- Use Upstash Redis with `@upstash/ratelimit` and a reusable `src/lib/rate-limit.ts` utility.
+- Apply the specified sliding-window limits keyed by IP and, where applicable, email.
+- Return `429 Too Many Requests` responses with a user-friendly error, `Retry-After`, and rate-limit metadata.
+- Display rate-limit errors clearly on the frontend.
+- Fail open when Upstash is unavailable.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Protect `/api/auth/callback/credentials` (5 attempts/15 minutes, IP + email), `/api/auth/register` (3/hour, IP), `/api/auth/forgot-password` (3/hour, IP), `/api/auth/reset-password` (5/15 minutes, IP), and `/api/auth/resend-verification` (3/15 minutes, IP + email).
+- Extract IP from `x-forwarded-for` or the request and combine it with email identifiers where specified.
+- Required environment variables: `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+- NextAuth credentials login may require a custom sign-in handler; middleware is a possible later refinement.
+- 2026-10-16 implementation: added lazy Upstash sliding-window limiting with fail-open behavior, IP/email keys, 429 JSON responses, and `Retry-After` headers for registration, credentials login, password recovery, and verification resend. Added JSON recovery/verification route boundaries and migrated the three forms to accessible fetch-based feedback while retaining Server Action guards.
+- 2026-10-16 verification: utility contract checks, live development Upstash HTTP limit checks, neutral unknown-email responses, mixed-case email bucket checks, unavailable-Upstash fail-open checks, desktop/320px browser checks, `pnpm lint`, `pnpm build`, `pnpm exec tsc --noEmit`, and `git diff --check` are passing. No database migration or Neon operation was needed. Real provider delivery and production Upstash behavior remain unverified.
+- 2026-10-16 follow-up: Upstash sliding-window bucket resets could report only the remaining portion of a policy window (for example, 10 of 15 minutes). Denied decisions now expose the configured full cooldown for user messaging, `Retry-After`, and frontend countdowns: 15 minutes for login/reset/resend and 60 minutes for registration/forgot-password.
 
 ## History
 

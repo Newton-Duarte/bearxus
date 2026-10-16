@@ -13,6 +13,7 @@ const responseSchema = z.discriminatedUnion("success", [
   z.object({ success: z.literal(true), data: z.object({ id: z.string(), name: z.string().nullable(), email: z.string(), verificationEmailSent: z.boolean(), verificationRequired: z.boolean() }), error: z.null() }),
   z.object({ success: z.literal(false), data: z.null(), error: z.string() }),
 ]);
+const rateLimitResponseSchema = z.object({ error: z.string() });
 
 export function RegisterForm() {
   const router = useRouter();
@@ -60,7 +61,12 @@ export function RegisterForm() {
         startNavigation(() => router.push(destination));
         return;
       }
-      const error = result.success && !result.data.success ? result.data.error : "Unable to register. Please try again.";
+      const rateLimit = rateLimitResponseSchema.safeParse(body);
+      const error = result.success && !result.data.success
+        ? result.data.error
+        : rateLimit.success
+          ? rateLimit.data.error
+          : "Unable to register. Please try again.";
       setState({ success: false, data: null, error });
     } catch {
       setState({ success: false, data: null, error: "Unable to register. Check your connection and try again." });

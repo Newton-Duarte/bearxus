@@ -6,6 +6,7 @@ import { users } from "@/db/schema";
 import { registrationSchema } from "@/lib/auth-validation";
 import { requestEmailVerification } from "@/lib/email-verification";
 import { isEmailVerificationEnabled } from "@/lib/email-verification-config";
+import { checkAuthRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 interface RegistrationResponse {
   success: boolean;
@@ -18,6 +19,9 @@ function respond(body: RegistrationResponse, status: number): Response {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const rateLimit = await checkAuthRateLimit("register", request.headers);
+  if (!rateLimit.success) return rateLimitResponse(rateLimit);
+
   let input: unknown;
   try {
     input = await request.json();

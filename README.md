@@ -78,9 +78,12 @@ development branch when testing.
    (at least 32 random bytes); never commit these values.
    Set `RESEND_API_KEY` when email verification is enabled, and `AUTH_URL` to
    the canonical origin users will open (locally, `http://localhost:3000`).
-   `AUTH_URL` must be an HTTP(S) origin without a path, query, or credentials;
-   outside development it is required for verification delivery. Only development
-   falls back to `http://localhost:3000` when it is unset.
+    `AUTH_URL` must be an HTTP(S) origin without a path, query, or credentials;
+    outside development it is required for verification delivery. Only development
+    falls back to `http://localhost:3000` when it is unset.
+    Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to enable
+    serverless-compatible authentication rate limiting. The limiter fails open
+    if Upstash is unavailable, so configure and monitor it before public launch.
 3. Run `pnpm dev` and open `http://localhost:3000/dashboard`. Unauthenticated
    visitors are redirected to the custom `/sign-in` page.
 4. Click **Sign in with GitHub** and complete authorization. You should return
@@ -188,10 +191,14 @@ Open `http://localhost:3000/sign-in?callbackUrl=%2Fdashboard` and use
 the email/password form. Sign-in keeps the same database-backed user ID
 across sessions. GitHub remains available; OAuth-only accounts cannot sign
 in with a password, and registration cannot overwrite an existing account.
-Automatic account linking and password reset are not implemented. GitHub OAuth
-is unchanged and does not use this email/password verification flow. Registration
-and password sign-in still need general abuse protection before public launch;
-the resend cooldown is not a substitute for global/per-IP rate limiting.
+Automatic account linking is not implemented. GitHub OAuth is unchanged and does not use this
+email/password verification flow. Authentication requests use Upstash sliding-window limits:
+credentials login allows 5 attempts per 15 minutes per IP/email, registration allows 3 per hour
+per IP, forgot-password allows 3 per hour per IP, reset-password allows 5 per 15 minutes per IP,
+and verification resend allows 3 per 15 minutes per IP/email. Denied API requests return status
+429 with a user-facing `error` message and numeric `Retry-After` header; the auth forms show the
+same message and retry countdown. The limiter fails open when Upstash is unavailable, while the
+existing database email cooldowns remain in place for verification and password-reset delivery.
 
 The dashboard sidebar shows the session user's name, email, and GitHub avatar
 or initials. Clicking the account row opens Profile, Settings, and Sign out.

@@ -1,12 +1,14 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { signIn, signOut } from "@/auth";
 import { EmailNotVerifiedError } from "@/lib/auth-errors";
 import { getAuthRedirect } from "@/lib/auth-redirect";
 import { signInSchema } from "@/lib/auth-validation";
+import { checkAuthRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
 import type { AuthFormState } from "@/types/auth";
 
 export async function signInWithCredentials(
@@ -21,6 +23,11 @@ export async function signInWithCredentials(
       if (field === "email" || field === "password") fieldErrors[field] ??= issue.message;
     }
     return { success: false, data: null, error: "Check your email and password.", fieldErrors };
+  }
+
+  const rateLimit = await checkAuthRateLimit("login", await headers(), parsed.data.email);
+  if (!rateLimit.success) {
+    return { success: false, data: null, error: getRateLimitMessage(rateLimit) };
   }
 
   try {
