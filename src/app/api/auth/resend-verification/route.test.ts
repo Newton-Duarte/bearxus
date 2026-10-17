@@ -91,6 +91,19 @@ describe("POST /api/auth/resend-verification", () => {
     expect(mocks.requestEmailVerification).toHaveBeenCalledWith("user@example.com");
   });
 
+  it("returns the retry value supplied by the verification service", async () => {
+    mocks.requestEmailVerification.mockResolvedValue({ status: "cooldown", retryAfterSeconds: 90 });
+
+    const response = await POST(request({ email: "user@example.com" }));
+
+    expect(response.status).toBe(200);
+    expect(await responseBody(response)).toEqual({
+      success: true,
+      data: { retryAfterSeconds: 90 },
+      error: null,
+    });
+  });
+
   it("keeps email delivery failures neutral", async () => {
     mocks.requestEmailVerification.mockRejectedValue(new Error("provider unavailable"));
 

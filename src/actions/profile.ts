@@ -7,6 +7,7 @@ import { auth, signOut } from "@/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { changePasswordSchema } from "@/lib/auth-validation";
+import { getFirstFieldErrors } from "@/lib/form-errors";
 import type { ChangePasswordState } from "@/types/profile";
 
 export async function changePassword(
@@ -20,13 +21,7 @@ export async function changePassword(
 
   const parsed = changePasswordSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    const fieldErrors: ChangePasswordState["fieldErrors"] = {};
-    for (const issue of parsed.error.issues) {
-      const field = issue.path[0];
-      if (field === "currentPassword" || field === "password" || field === "confirmPassword") {
-        fieldErrors[field] ??= issue.message;
-      }
-    }
+    const fieldErrors = getFirstFieldErrors(parsed.error.issues, ["currentPassword", "password", "confirmPassword"]);
     return { success: false, error: "Check the highlighted fields and try again.", fieldErrors };
   }
 

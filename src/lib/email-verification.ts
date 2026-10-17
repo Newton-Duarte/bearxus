@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { emailVerifications, users } from "@/db/schema";
 import { sendVerificationEmail } from "@/lib/email";
 import { isEmailVerificationEnabled } from "@/lib/email-verification-config";
+import { RECOVERY_COOLDOWN_SECONDS } from "@/lib/recovery";
 import type { VerificationResult, VerificationSendResult } from "@/types/email-verification";
 
 function hashToken(token: string): string {
@@ -29,12 +30,12 @@ function verificationUrl(token: string): string {
 }
 
 export async function requestEmailVerification(email: string): Promise<VerificationSendResult> {
-  if (!isEmailVerificationEnabled()) return { status: "ineligible", retryAfterSeconds: 60 };
+  if (!isEmailVerificationEnabled()) return { status: "ineligible", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   const user = await db.query.users.findFirst({
     columns: { id: true, email: true },
     where: and(eq(users.email, email.trim().toLowerCase()), isNull(users.emailVerified), isNotNull(users.passwordHash)),
   });
-  if (!user) return { status: "ineligible", retryAfterSeconds: 60 };
+  if (!user) return { status: "ineligible", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
 
   const token = randomBytes(32).toString("hex");
   const tokenHash = hashToken(token);
@@ -42,7 +43,7 @@ export async function requestEmailVerification(email: string): Promise<Verificat
   try {
     url = verificationUrl(token);
   } catch {
-    return { status: "failed", retryAfterSeconds: 60 };
+    return { status: "failed", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   }
 
   const claimed = await db.execute(sql`
@@ -52,18 +53,18 @@ export async function requestEmailVerification(email: string): Promise<Verificat
     where ${users.id} = ${user.id} and ${users.emailVerified} is null and ${users.passwordHash} is not null
     on conflict (user_id) do update set
       token_hash = excluded.token_hash, expires_at = excluded.expires_at, last_sent_at = excluded.last_sent_at
-    where ${emailVerifications.lastSentAt} <= now() - interval '60 seconds'
+     where ${emailVerifications.lastSentAt} <= now() - ${RECOVERY_COOLDOWN_SECONDS} * interval '1 second'
     returning user_id
   `);
-  if (!claimed.rows.length) return { status: "cooldown", retryAfterSeconds: 60 };
+  if (!claimed.rows.length) return { status: "cooldown", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
 
   try {
     await sendVerificationEmail(user.email, url);
-    return { status: "sent", retryAfterSeconds: 60 };
+    return { status: "sent", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   } catch {
     await db.update(emailVerifications).set({ tokenHash: hashToken(randomBytes(32).toString("hex")) })
       .where(and(eq(emailVerifications.userId, user.id), eq(emailVerifications.tokenHash, tokenHash)));
-    return { status: "failed", retryAfterSeconds: 60 };
+    return { status: "failed", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   }
 }
 

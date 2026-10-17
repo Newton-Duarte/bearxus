@@ -1,14 +1,14 @@
 import "server-only";
 
+import { hash } from "bcryptjs";
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, exists, gt, inArray, isNotNull, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { passwordResets, users } from "@/db/schema";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { RECOVERY_COOLDOWN_SECONDS } from "@/lib/recovery";
 import type { PasswordResetResult, PasswordResetSendResult } from "@/types/password-reset";
-
-const RETRY_AFTER_SECONDS = 60;
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -35,7 +35,7 @@ export async function requestPasswordReset(email: string): Promise<PasswordReset
     columns: { id: true, email: true },
     where: and(eq(users.email, normalizedEmail), isNotNull(users.passwordHash)),
   });
-  if (!user) return { status: "ineligible", retryAfterSeconds: RETRY_AFTER_SECONDS };
+  if (!user) return { status: "ineligible", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
 
   const token = randomBytes(32).toString("hex");
   const tokenHash = hashToken(token);
@@ -43,7 +43,7 @@ export async function requestPasswordReset(email: string): Promise<PasswordReset
   try {
     url = resetUrl(token);
   } catch {
-    return { status: "failed", retryAfterSeconds: RETRY_AFTER_SECONDS };
+    return { status: "failed", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   }
 
   const claimed = await db.execute(sql`
@@ -53,10 +53,10 @@ export async function requestPasswordReset(email: string): Promise<PasswordReset
     where ${users.id} = ${user.id} and ${users.passwordHash} is not null
     on conflict (user_id) do update set
       token_hash = excluded.token_hash, expires_at = excluded.expires_at, last_sent_at = excluded.last_sent_at, delivery_status = excluded.delivery_status
-    where ${passwordResets.lastSentAt} <= now() - interval '60 seconds'
+     where ${passwordResets.lastSentAt} <= now() - ${RECOVERY_COOLDOWN_SECONDS} * interval '1 second'
     returning user_id
   `);
-  if (!claimed.rows.length) return { status: "cooldown", retryAfterSeconds: RETRY_AFTER_SECONDS };
+  if (!claimed.rows.length) return { status: "cooldown", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
 
   try {
     await sendPasswordResetEmail(user.email, url);
@@ -65,10 +65,10 @@ export async function requestPasswordReset(email: string): Promise<PasswordReset
       .where(and(eq(passwordResets.userId, user.id), eq(passwordResets.tokenHash, tokenHash)))
       .returning({ userId: passwordResets.userId });
     return ready.length
-      ? { status: "sent", retryAfterSeconds: RETRY_AFTER_SECONDS }
-      : { status: "failed", retryAfterSeconds: RETRY_AFTER_SECONDS };
+      ? { status: "sent", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS }
+      : { status: "failed", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   } catch {
-    return { status: "failed", retryAfterSeconds: RETRY_AFTER_SECONDS };
+    return { status: "failed", retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS };
   }
 }
 
@@ -86,6 +86,13 @@ export async function isUsablePasswordResetToken(token: string): Promise<boolean
     ))
     .limit(1);
   return Boolean(reset);
+}
+
+export async function completePasswordReset(token: string, password: string): Promise<PasswordResetResult> {
+  if (!(await isUsablePasswordResetToken(token))) return "invalid";
+
+  const passwordHash = await hash(password, 12);
+  return resetPasswordToken(token, passwordHash);
 }
 
 export async function resetPasswordToken(token: string, passwordHash: string): Promise<PasswordResetResult> {
