@@ -1,23 +1,16 @@
-# Current Feature: shadcn/ui + Base UI Setup
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Configure shadcn/ui with the `base` / `base-nova` preset and Base UI primitives from the current `@base-ui/react` package.
-- Use pnpm as the package manager for the setup.
-- Integrate the custom theme CSS variables from the shadcn/create design playground.
-- Align Tailwind CSS configuration with Base UI utility structures and token mapping.
-- Standardize component composition on the `render` prop rather than Radix UI's legacy `asChild` pattern.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- The project uses Next.js v16; avoid outdated initialization, type, and composition patterns.
-- Feature specification: `context/features/shadcn-base-ui-config-spec.md`.
-- References: https://ui.shadcn.com and https://base-ui.com.
-- The current shadcn Base UI registry maps `base-nova` to `@base-ui/react`; generated components use its Base UI APIs and `render` composition.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -33,3 +26,4 @@ In Progress
 - 2026-10-16: Added the protected `/profile` page with account identity, GitHub-or-initials avatar fallback, account creation date, five user-scoped usage stats, credentials-only password changes, and accessible modal account deletion confirmation. Verified lint, TypeScript, production build, diff checks, protected redirects, live development-fixture password lifecycle, sign-out/sign-in, responsive 320px layout, keyboard focus, and no profile console errors. Account deletion was not executed; the existing dashboard crypto prerender warning remains deferred.
 - 2026-10-16: Refined the profile password-change UX to match the existing auth forms: generic errors are top-of-form focusable alerts, controlled fields preserve values across validation/server errors, sensitive values clear when the dialog closes, and modal scroll chaining is contained. Verified browser preservation/error checks, lint, TypeScript, production build, and diff checks.
 - 2026-10-16: Added Upstash Redis sliding-window rate limiting with fail-open behavior for registration, credentials login, password recovery, and verification resend; added 429/`Retry-After` API responses, protected retained Server Actions, and accessible frontend retry feedback. Denied requests use the configured full cooldown (15 minutes or 60 minutes) rather than the remaining sliding-window bucket. Verified live development HTTP/browser limits, neutral responses, mixed-case key normalization, fail-open behavior, cooldown messages/countdowns, lint, build, TypeScript, and diff checks. No database migration was needed; real provider delivery and production Upstash behavior remain unverified.
+- 2026-10-17: Configured shadcn/ui `base-nova` with Base UI, added the generated Button component and `render`-compatible composition, consolidated global Tailwind v4 theme tokens, migrated auth actions, and added accessible purple light/dark OKLCH palettes. Verified shadcn configuration, lint, TypeScript, production build, browser theme switching, contrast ratios, and diff checks.
