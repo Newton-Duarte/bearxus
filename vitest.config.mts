@@ -9,6 +9,18 @@ export default defineConfig({
     },
   },
   test: {
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      reportsDirectory: "./coverage",
+      include: [
+        "src/actions/**/*.ts",
+        "src/app/api/**/*.ts",
+        "src/auth.ts",
+        "src/lib/**/*.ts",
+      ],
+      exclude: ["src/**/*.test.ts", "src/types/**", "src/auth.config.ts"],
+    },
     environment: "node",
     include: ["src/**/*.test.ts"],
   },
