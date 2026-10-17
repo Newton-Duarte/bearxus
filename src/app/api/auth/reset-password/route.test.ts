@@ -2,15 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   checkAuthRateLimit: vi.fn(),
-  hash: vi.fn(),
-  isUsablePasswordResetToken: vi.fn(),
-  resetPasswordToken: vi.fn(),
+  completePasswordReset: vi.fn(),
 }));
 
-vi.mock("bcryptjs", () => ({ hash: mocks.hash }));
 vi.mock("@/lib/password-reset", () => ({
-  isUsablePasswordResetToken: mocks.isUsablePasswordResetToken,
-  resetPasswordToken: mocks.resetPasswordToken,
+  completePasswordReset: mocks.completePasswordReset,
 }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/rate-limit", async () => {
@@ -37,9 +33,7 @@ async function responseBody(response: Response): Promise<Record<string, unknown>
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.checkAuthRateLimit.mockResolvedValue({ success: true, remaining: 4, reset: Date.now() + 1_000 });
-  mocks.hash.mockResolvedValue("hashed-password");
-  mocks.isUsablePasswordResetToken.mockResolvedValue(true);
-  mocks.resetPasswordToken.mockResolvedValue("reset");
+  mocks.completePasswordReset.mockResolvedValue("reset");
 });
 
 afterEach(() => {
@@ -63,7 +57,7 @@ describe("POST /api/auth/reset-password", () => {
       data: null,
       error: "This password reset link is invalid, expired, or already used.",
     });
-    expect(mocks.isUsablePasswordResetToken).not.toHaveBeenCalled();
+    expect(mocks.completePasswordReset).not.toHaveBeenCalled();
   });
 
   it.each([{}, { token: 123, password: "password123", confirmPassword: "password123" }])(
@@ -77,7 +71,7 @@ describe("POST /api/auth/reset-password", () => {
         data: null,
         error: "This password reset link is invalid, expired, or already used.",
       });
-      expect(mocks.isUsablePasswordResetToken).not.toHaveBeenCalled();
+    expect(mocks.completePasswordReset).not.toHaveBeenCalled();
     },
   );
 
@@ -111,8 +105,8 @@ describe("POST /api/auth/reset-password", () => {
     expect(await responseBody(response)).toEqual({ error: "Too many attempts. Please try again in 15 minutes." });
   });
 
-  it("rejects expired or replayed tokens without hashing", async () => {
-    mocks.isUsablePasswordResetToken.mockResolvedValue(false);
+  it("returns the invalid-token message when the helper rejects an expired or replayed token", async () => {
+    mocks.completePasswordReset.mockResolvedValue("invalid");
 
     const response = await POST(request({ token, password: "password123", confirmPassword: "password123" }));
 
@@ -122,8 +116,7 @@ describe("POST /api/auth/reset-password", () => {
       data: null,
       error: "This password reset link is invalid, expired, or already used.",
     });
-    expect(mocks.hash).not.toHaveBeenCalled();
-    expect(mocks.resetPasswordToken).not.toHaveBeenCalled();
+    expect(mocks.completePasswordReset).toHaveBeenCalledWith(token, "password123");
   });
 
   it("hashes the password and consumes a valid token", async () => {
@@ -131,12 +124,11 @@ describe("POST /api/auth/reset-password", () => {
 
     expect(response.status).toBe(200);
     expect(await responseBody(response)).toEqual({ success: true, data: null, error: null });
-    expect(mocks.hash).toHaveBeenCalledWith("password123", 12);
-    expect(mocks.resetPasswordToken).toHaveBeenCalledWith(token, "hashed-password");
+    expect(mocks.completePasswordReset).toHaveBeenCalledWith(token, "password123");
   });
 
   it("returns the invalid-token message when consumption loses a race", async () => {
-    mocks.resetPasswordToken.mockResolvedValue("invalid");
+    mocks.completePasswordReset.mockResolvedValue("invalid");
 
     const response = await POST(request({ token, password: "password123", confirmPassword: "password123" }));
 
@@ -145,7 +137,7 @@ describe("POST /api/auth/reset-password", () => {
   });
 
   it("returns a controlled error for token-service failures", async () => {
-    mocks.isUsablePasswordResetToken.mockRejectedValue(new Error("database unavailable"));
+    mocks.completePasswordReset.mockRejectedValue(new Error("database unavailable"));
 
     const response = await POST(request({ token, password: "password123", confirmPassword: "password123" }));
 
@@ -157,8 +149,8 @@ describe("POST /api/auth/reset-password", () => {
     });
   });
 
-  it("returns a controlled error when hashing fails", async () => {
-    mocks.hash.mockRejectedValue(new Error("hash unavailable"));
+  it("returns a controlled error when the helper fails", async () => {
+    mocks.completePasswordReset.mockRejectedValue(new Error("hash unavailable"));
 
     const response = await POST(request({ token, password: "password123", confirmPassword: "password123" }));
 
@@ -168,6 +160,6 @@ describe("POST /api/auth/reset-password", () => {
       data: null,
       error: "Unable to reset your password right now. Please try again.",
     });
-    expect(mocks.resetPasswordToken).not.toHaveBeenCalled();
+    expect(mocks.completePasswordReset).toHaveBeenCalled();
   });
 });

@@ -8,6 +8,7 @@ import { signIn, signOut } from "@/auth";
 import { EmailNotVerifiedError } from "@/lib/auth-errors";
 import { getAuthRedirect } from "@/lib/auth-redirect";
 import { signInSchema } from "@/lib/auth-validation";
+import { getFirstFieldErrors } from "@/lib/form-errors";
 import { checkAuthRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
 import type { AuthFormState } from "@/types/auth";
 
@@ -17,11 +18,7 @@ export async function signInWithCredentials(
 ): Promise<AuthFormState> {
   const parsed = signInSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    const fieldErrors: AuthFormState["fieldErrors"] = {};
-    for (const issue of parsed.error.issues) {
-      const field = issue.path[0];
-      if (field === "email" || field === "password") fieldErrors[field] ??= issue.message;
-    }
+    const fieldErrors = getFirstFieldErrors(parsed.error.issues, ["email", "password"]);
     return { success: false, data: null, error: "Check your email and password.", fieldErrors };
   }
 

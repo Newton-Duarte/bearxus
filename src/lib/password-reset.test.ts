@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   exists: vi.fn(),
   findFirst: vi.fn(),
   gt: vi.fn(),
+  hash: vi.fn(),
   inArray: vi.fn(),
   isEmailVerificationEnabled: vi.fn(),
   isNotNull: vi.fn(),
@@ -33,6 +34,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 import { createHash } from "node:crypto";
 
+vi.mock("bcryptjs", () => ({ hash: mocks.hash }));
 vi.mock("drizzle-orm", () => ({
   and: mocks.and,
   eq: mocks.eq,
@@ -60,6 +62,7 @@ vi.mock("@/db/schema", () => ({
 vi.mock("@/lib/email", () => ({ sendPasswordResetEmail: mocks.sendPasswordResetEmail }));
 
 import {
+  completePasswordReset,
   isUsablePasswordResetToken,
   requestPasswordReset,
   resetPasswordToken,
@@ -78,6 +81,7 @@ beforeEach(() => {
   mocks.isNotNull.mockImplementation((column: unknown) => ({ column, notNull: true }));
   vi.stubEnv("AUTH_URL", "https://bearxus.test");
   mocks.findFirst.mockResolvedValue(user);
+  mocks.hash.mockResolvedValue("hashed-password");
   mocks.execute.mockResolvedValue({ rows: [{ user_id: "user-1" }] });
   mocks.sendPasswordResetEmail.mockResolvedValue(undefined);
   mocks.updateReturning.mockResolvedValue([{ userId: "user-1" }]);
@@ -238,5 +242,30 @@ describe("resetPasswordToken", () => {
     await expect(resetPasswordToken(token, "hashed-password")).resolves.toBe("invalid");
 
     expect(mocks.withUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("completePasswordReset", () => {
+  it("rejects an unusable token without hashing or consuming it", async () => {
+    mocks.limit.mockResolvedValueOnce([]);
+
+    await expect(completePasswordReset(token, "new-password")).resolves.toBe("invalid");
+
+    expect(mocks.hash).not.toHaveBeenCalled();
+    expect(mocks.deleteReset).not.toHaveBeenCalled();
+  });
+
+  it("hashes a usable token with cost 12 before consuming it", async () => {
+    await expect(completePasswordReset(token, "new-password")).resolves.toBe("reset");
+
+    expect(mocks.hash).toHaveBeenCalledWith("new-password", 12);
+    expect(mocks.deleteReset).toHaveBeenCalled();
+    expect(mocks.withUpdate).toHaveBeenCalled();
+  });
+
+  it("returns invalid when atomic token consumption loses a race", async () => {
+    mocks.withUpdateReturning.mockResolvedValueOnce([]);
+
+    await expect(completePasswordReset(token, "new-password")).resolves.toBe("invalid");
   });
 });

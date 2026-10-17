@@ -1,6 +1,7 @@
 import { verificationEmailSchema } from "@/lib/auth-validation";
 import { requestEmailVerification } from "@/lib/email-verification";
 import { checkAuthRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { RECOVERY_COOLDOWN_SECONDS } from "@/lib/recovery";
 
 interface VerificationResponse {
   success: boolean;
@@ -29,9 +30,10 @@ export async function POST(request: Request): Promise<Response> {
   if (!rateLimit.success) return rateLimitResponse(rateLimit);
 
   try {
-    await requestEmailVerification(parsed.data.email);
+    const result = await requestEmailVerification(parsed.data.email);
+    return respond({ success: true, data: { retryAfterSeconds: result.retryAfterSeconds }, error: null }, 200);
   } catch {
     // Delivery/storage failures must not reveal whether this account is eligible.
   }
-  return respond({ success: true, data: { retryAfterSeconds: 60 }, error: null }, 200);
+  return respond({ success: true, data: { retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS }, error: null }, 200);
 }

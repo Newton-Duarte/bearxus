@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { Text } from "@/components/ui/text";
+import { RECOVERY_COOLDOWN_SECONDS } from "@/lib/recovery";
 import type { VerificationFormState } from "@/types/email-verification";
 
 const initialState: VerificationFormState = { success: false, data: null, error: null };
@@ -50,7 +51,7 @@ export function VerificationForm() {
         const body: unknown = await response.json();
         if (response.status === 429) {
           const result = rateLimitResponseSchema.safeParse(body);
-          const retryAfterSeconds = Number(response.headers.get("Retry-After")) || 60;
+          const retryAfterSeconds = Number(response.headers.get("Retry-After")) || RECOVERY_COOLDOWN_SECONDS;
           setSecondsLeft(retryAfterSeconds);
           setState({ success: false, data: { retryAfterSeconds }, error: result.success ? result.data.error : "Too many attempts. Please try again later." });
         } else {

@@ -1,8 +1,7 @@
 import { passwordResetRequestSchema } from "@/lib/auth-validation";
 import { requestPasswordReset } from "@/lib/password-reset";
 import { checkAuthRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-
-const RETRY_AFTER_SECONDS = 60;
+import { RECOVERY_COOLDOWN_SECONDS } from "@/lib/recovery";
 
 interface PasswordResetRequestResponse {
   success: boolean;
@@ -34,6 +33,6 @@ export async function POST(request: Request): Promise<Response> {
     const result = await requestPasswordReset(parsed.data.email);
     return respond({ success: true, data: { retryAfterSeconds: result.retryAfterSeconds }, error: null }, 200);
   } catch {
-    return respond({ success: true, data: { retryAfterSeconds: RETRY_AFTER_SECONDS }, error: null }, 200);
+    return respond({ success: true, data: { retryAfterSeconds: RECOVERY_COOLDOWN_SECONDS }, error: null }, 200);
   }
 }
