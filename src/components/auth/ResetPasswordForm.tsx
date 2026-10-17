@@ -5,8 +5,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
-import { AuthField } from "@/components/auth/AuthField";
 import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
+import { Text } from "@/components/ui/text";
 import type { PasswordResetFormState } from "@/types/password-reset";
 
 const initialState: PasswordResetFormState = { success: false, data: null, error: null };
@@ -75,8 +76,8 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   if (!token) {
     return (
       <div className="space-y-5">
-        <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive">This password reset link is invalid, expired, or already used.</p>
-        <p className="text-center text-sm text-muted-foreground"><Link href="/forgot-password" className="auth-link">Request a new reset link</Link></p>
+         <Text as="p" variant="small" role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 leading-6 text-destructive">This password reset link is invalid, expired, or already used.</Text>
+         <Text as="p" variant="muted" className="text-center"><Link href="/forgot-password" className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Request a new reset link</Link></Text>
       </div>
     );
   }
@@ -84,11 +85,11 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
       <input type="hidden" name="token" value={token} />
-      <AuthField name="password" label="New password" type="password" autoComplete="new-password" required hint="At least 8 characters, up to 72 UTF-8 bytes." error={state.fieldErrors?.password} />
-      <AuthField name="confirmPassword" label="Confirm new password" type="password" autoComplete="new-password" required error={state.fieldErrors?.confirmPassword} />
-      {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
-      <Button type="submit" disabled={pending} className="h-11 w-full">{pending ? "Updating password…" : "Set new password"}</Button>
-      <p className="text-center text-sm text-muted-foreground"><Link href="/sign-in" className="auth-link">Back to sign in</Link></p>
+       <TextField name="password" label="New password" type="password" autoComplete="new-password" required description="At least 8 characters, up to 72 UTF-8 bytes." error={state.fieldErrors?.password} />
+       <TextField name="confirmPassword" label="Confirm new password" type="password" autoComplete="new-password" required error={state.fieldErrors?.confirmPassword} />
+       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"><Text as="span" variant="small" className="leading-6 text-destructive">{state.error}</Text></p> : null}
+       <Button type="submit" disabled={pending} className="h-11 w-full">{pending ? "Updating password…" : "Set new password"}</Button>
+       <Text as="p" variant="muted" className="text-center"><Link href="/sign-in" className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Back to sign in</Link></Text>
     </form>
   );
 }

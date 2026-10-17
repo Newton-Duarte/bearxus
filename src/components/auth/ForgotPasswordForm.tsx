@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
 
-import { AuthField } from "@/components/auth/AuthField";
 import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
+import { Text } from "@/components/ui/text";
 import type { PasswordResetRequestState } from "@/types/password-reset";
 
 const initialState: PasswordResetRequestState = { success: false, data: null, error: null };
@@ -65,11 +66,11 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
-      <AuthField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" error={state.fieldErrors?.email} />
-      {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
-      {state.success ? <p role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm leading-6">If an account exists for that email, check your inbox and spam folder for a password reset link.</p> : null}
-      <Button type="submit" disabled={pending || secondsLeft > 0} className="h-11 w-full">{pending ? "Sending…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Send reset link"}</Button>
-      <p className="text-center text-sm text-muted-foreground">Remembered your password? <Link href="/sign-in" className="auth-link">Sign in</Link></p>
+       <TextField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" error={state.fieldErrors?.email} />
+       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"><Text as="span" variant="small" className="leading-6 text-destructive">{state.error}</Text></p> : null}
+       {state.success ? <Text as="p" variant="small" role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 leading-6">If an account exists for that email, check your inbox and spam folder for a password reset link.</Text> : null}
+       <Button type="submit" disabled={pending || secondsLeft > 0} className="h-11 w-full">{pending ? "Sending…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Send reset link"}</Button>
+       <Text as="p" variant="muted" className="text-center">Remembered your password? <Link href="/sign-in" className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Sign in</Link></Text>
     </form>
   );
 }

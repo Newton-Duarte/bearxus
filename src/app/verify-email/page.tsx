@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { VerificationForm } from "@/components/auth/VerificationForm";
+import { Text } from "@/components/ui/text";
 import { isEmailVerificationEnabled } from "@/lib/email-verification-config";
 
 export const metadata: Metadata = { title: "Verify your email | Bearxus", robots: { index: false, follow: false } };
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "Verify your email | Bearxus", robots
 export default function VerifyEmailPage({ searchParams }: PageProps<"/verify-email">) {
   return (
     <AuthShell title="Email verification" description="Manage email verification for your account.">
-      <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading verification…</p>}>
+        <Suspense fallback={<Text as="p" variant="muted" role="status">Loading verification…</Text>}>
         <VerificationContent searchParams={searchParams} />
       </Suspense>
     </AuthShell>
@@ -32,8 +33,8 @@ async function VerificationContent({ searchParams }: Pick<PageProps<"/verify-ema
           : null;
   return (
     <div className="space-y-6">
-      <p className="text-sm leading-6 text-muted-foreground">Open the link in your email before signing in. Links expire after 24 hours.</p>
-      {notice ? <p role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm leading-6">{notice}</p> : null}
+      <Text as="p" variant="muted" className="leading-6">Open the link in your email before signing in. Links expire after 24 hours.</Text>
+      {notice ? <Text as="p" variant="small" role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 leading-6">{notice}</Text> : null}
       <VerificationForm />
     </div>
   );

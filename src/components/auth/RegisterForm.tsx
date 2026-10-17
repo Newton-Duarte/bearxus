@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { z } from "zod";
 
-import { AuthField } from "@/components/auth/AuthField";
 import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
+import { Text } from "@/components/ui/text";
 import { registrationSchema } from "@/lib/auth-validation";
 import type { AuthFormState } from "@/types/auth";
 
@@ -78,13 +79,13 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
-      <AuthField name="name" label="Name" autoComplete="name" required maxLength={100} placeholder="Your name" error={state.fieldErrors?.name} />
-      <AuthField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" error={state.fieldErrors?.email} />
-      <AuthField name="password" label="Password" type="password" autoComplete="new-password" required hint="At least 8 characters, up to 72 UTF-8 bytes." error={state.fieldErrors?.password} />
-      <AuthField name="confirmPassword" label="Confirm password" type="password" autoComplete="new-password" required error={state.fieldErrors?.confirmPassword} />
-      {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
-      <Button type="submit" disabled={pending || navigating} className="h-11 w-full">{pending || navigating ? "Creating account…" : "Create account"}</Button>
-      <p className="text-center text-sm text-muted-foreground">Already have an account? <Link href="/sign-in" className="auth-link">Sign in</Link></p>
+       <TextField name="name" label="Name" autoComplete="name" required maxLength={100} placeholder="Your name" error={state.fieldErrors?.name} />
+       <TextField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" error={state.fieldErrors?.email} />
+       <TextField name="password" label="Password" type="password" autoComplete="new-password" required description="At least 8 characters, up to 72 UTF-8 bytes." error={state.fieldErrors?.password} />
+       <TextField name="confirmPassword" label="Confirm password" type="password" autoComplete="new-password" required error={state.fieldErrors?.confirmPassword} />
+       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"><Text as="span" variant="small" className="leading-6 text-destructive">{state.error}</Text></p> : null}
+       <Button type="submit" disabled={pending || navigating} className="h-11 w-full">{pending || navigating ? "Creating account…" : "Create account"}</Button>
+       <Text as="p" variant="muted" className="text-center">Already have an account? <Link href="/sign-in" className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Sign in</Link></Text>
     </form>
   );
 }

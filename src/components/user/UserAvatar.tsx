@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { Text } from "@/components/ui/text";
+
 interface UserAvatarProps {
   name: string | null;
   image: string | null;
@@ -23,7 +25,7 @@ export function UserAvatar({ name, image, email, className = "" }: UserAvatarPro
     <span aria-hidden="true" className={`inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/20 text-xs font-semibold text-primary ${className}`}>
       {image && image !== failedImage ? (
         <Image src={image} alt="" width={36} height={36} unoptimized referrerPolicy="no-referrer" onError={() => setFailedImage(image)} className="size-full object-cover" />
-      ) : initials}
+      ) : <Text as="span" variant="small" className="text-xs text-primary">{initials}</Text>}
     </span>
   );
 }

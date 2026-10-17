@@ -5,8 +5,9 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { signInWithCredentials, signInWithGitHub } from "@/actions/auth";
-import { AuthField } from "@/components/auth/AuthField";
 import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
+import { Text } from "@/components/ui/text";
 import type { AuthFormState } from "@/types/auth";
 
 interface SignInFormProps {
@@ -32,24 +33,24 @@ export function SignInForm({ callbackUrl, oauthError, verified, registered, pass
 
   return (
     <div className="space-y-6">
-      {verified ? <p role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm leading-6">Email verified. Sign in to your workspace.</p> : null}
-      {registered && !verified ? <p role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm leading-6">Account created. Sign in to your workspace.</p> : null}
-      {passwordReset ? <p role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm leading-6">Your password was reset. Sign in with your new password.</p> : null}
+      {verified ? <Text as="p" variant="small" role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 leading-6">Email verified. Sign in to your workspace.</Text> : null}
+      {registered && !verified ? <Text as="p" variant="small" role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 leading-6">Account created. Sign in to your workspace.</Text> : null}
+      {passwordReset ? <Text as="p" variant="small" role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 leading-6">Your password was reset. Sign in with your new password.</Text> : null}
       <form action={action} className="space-y-5">
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
-        <AuthField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" value={email} onChange={event => setEmail(event.target.value)} error={state.fieldErrors?.email} />
-        <AuthField name="password" label="Password" type="password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} error={state.fieldErrors?.password} />
-        <div className="-mt-2 flex justify-end"><Link href="/forgot-password" className="auth-link text-sm">Forgot password?</Link></div>
-        {state.error || oauthError ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error || oauthError}</p> : null}
+        <TextField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" value={email} onChange={event => setEmail(event.target.value)} error={state.fieldErrors?.email} />
+        <TextField name="password" label="Password" type="password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} error={state.fieldErrors?.password} />
+        <div className="-mt-2 flex justify-end"><Link href="/forgot-password" className="rounded-sm font-medium text-foreground text-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Forgot password?</Link></div>
+        {state.error || oauthError ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"><Text as="span" variant="small" className="leading-6 text-destructive">{state.error || oauthError}</Text></p> : null}
         <Button type="submit" disabled={pending} className="h-11 w-full">{pending ? "Signing in…" : "Sign in"}</Button>
       </form>
-      {verificationRequired ? <p className="text-center text-sm text-muted-foreground"><Link href="/verify-email" className="auth-link">{state.requiresEmailVerification ? "Request a new verification link" : "Need to verify your email?"}</Link></p> : null}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" /></div>
+      {verificationRequired ? <Text as="p" variant="muted" className="text-center"><Link href="/verify-email" className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">{state.requiresEmailVerification ? "Request a new verification link" : "Need to verify your email?"}</Link></Text> : null}
+      <div className="flex items-center gap-4"><span className="h-px flex-1 bg-border" /><Text as="span" variant="muted" className="text-xs">or</Text><span className="h-px flex-1 bg-border" /></div>
       <form action={signInWithGitHub}>
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
         <GitHubButton />
       </form>
-      <p className="text-center text-sm text-muted-foreground">New to Bearxus? <Link href="/register" className="auth-link">Create an account</Link></p>
+      <Text as="p" variant="muted" className="text-center">New to Bearxus? <Link href="/register" className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Create an account</Link></Text>
     </div>
   );
 }

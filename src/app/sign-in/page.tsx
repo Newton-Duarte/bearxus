@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SignInForm } from "@/components/auth/SignInForm";
+import { Text } from "@/components/ui/text";
 import { getAuthRedirect } from "@/lib/auth-redirect";
 import { isEmailVerificationEnabled } from "@/lib/email-verification-config";
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "Sign in | Bearxus" };
 export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
   return (
     <AuthShell title="Welcome back" description="Sign in to your Bearxus workspace.">
-      <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading sign-in…</p>}>
+      <Suspense fallback={<Text as="p" variant="muted" role="status">Loading sign-in…</Text>}>
         <SignInContent searchParams={searchParams} />
       </Suspense>
     </AuthShell>

@@ -3,13 +3,14 @@ import { Suspense } from "react";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
+import { Text } from "@/components/ui/text";
 
 export const metadata: Metadata = { title: "Reset password | Bearxus", referrer: "no-referrer", robots: { index: false, follow: false } };
 
 export default function ResetPasswordPage({ searchParams }: PageProps<"/reset-password">) {
   return (
     <AuthShell title="Choose a new password" description="Set a new password for your Bearxus workspace.">
-      <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading password reset…</p>}>
+        <Suspense fallback={<Text as="p" variant="muted" role="status">Loading password reset…</Text>}>
         <ResetPasswordContent searchParams={searchParams} />
       </Suspense>
     </AuthShell>
