@@ -1,20 +1,16 @@
-# Current Feature: Consolidate Auth Recovery Refactors
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- Extract password-reset completion logic shared by the Server Action and API route into a server-only domain helper while preserving validation, rate limiting, status codes, and security behavior.
-- Make recovery-service `retryAfterSeconds` authoritative and centralize the 60-second recovery cooldown without changing the existing neutral recovery responses.
-- Centralize typed Zod field-error mapping for the repeated authentication action patterns while preserving each action's allowed fields and user-facing messages.
-- Add or update focused tests for the shared helpers and all affected action/API boundaries.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Implement only the approved refactors. Keep the repeated test `formData()` helpers local and defer shared recovery type aliases.
-- Preserve server/client boundaries and the existing Bearxus authentication behavior.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -35,4 +31,4 @@ Complete
 - 2026-10-17: Migrated authentication, profile, and dashboard UI to shared shadcn/Base UI primitives; added global `TextField`, removed `AuthField`, replaced native dialogs/account menu, standardized typography and OKLCH token styling, and removed legacy `@layer`/auth-link hooks. Verified lint, TypeScript, production build, diff checks, browser accessibility/responsive/interactions, theme interpolation, and protected-route behavior. Deferred the existing dashboard prerender warning and minor password-manager/live-region advisories.
 - 2026-10-17: Integrated a Node-only Vitest unit-testing layer with colocated coverage for auth server actions, registration and recovery route handlers, validation, redirects, and rate limiting. Added 11 test files with 114 passing tests, fake-timer and module-boundary mocking examples, and Vitest project guidance; hardened encoded callback rejection. Verified lint, TypeScript, production build, and diff checks. Live external integrations and browser/component testing remain out of scope.
 - 2026-10-17: Expanded Vitest coverage for auth authorization, NextAuth and verification routes, email delivery, verification and password-reset token lifecycles, and profile data scoping. Added V8 coverage reporting while excluding declarative `auth.config.ts`. Verified 19 test files with 180 passing tests, 96.8% statement coverage, 92.34% branch coverage, 97.31% line coverage, lint, TypeScript, and production build.
-- 2026-10-17: Consolidated password-reset completion between the Server Action and API route, centralized recovery cooldown/retry values, and extracted typed Zod field-error mapping. Verified lint, TypeScript, production build, and 187 passing Vitest tests; changes remain uncommitted pending permission.
+- 2026-10-17: Consolidated password-reset completion between the Server Action and API route, centralized recovery cooldown/retry values, extracted typed Zod field-error mapping using Zod v4 `$ZodIssueBase`, and verified lint, TypeScript, production build, and 187 passing Vitest tests.
