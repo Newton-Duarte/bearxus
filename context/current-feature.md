@@ -1,16 +1,21 @@
-# Current Feature
+# Current Feature: Integrate Unit Tests: Server Logic & Utility Unit Testing
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Standardize the isolated backend unit-testing layer on Vitest.
+- Add colocated `feature.test.ts` coverage for core server actions, mocking external dependencies and Next.js internals.
+- Use fake timers for time-dependent server-action logic.
+- Add lightweight Node-based examples covering pure utility functions, edge cases, and payload matrices.
+- Keep component rendering and browser-oriented testing out of scope; do not add `jsdom`, React Testing Library, or component-test dependencies.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Spec: `context/features/integrate-unit-tests-spec.md`.
+- Update relevant project context or documentation as needed.
 
 ## History
 
