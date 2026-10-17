@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
 
 import { AuthField } from "@/components/auth/AuthField";
+import { Button } from "@/components/ui/button";
 import type { VerificationFormState } from "@/types/email-verification";
 
 const initialState: VerificationFormState = { success: false, data: null, error: null };
@@ -71,7 +72,7 @@ export function VerificationForm() {
       <AuthField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" error={state.fieldErrors?.email} />
       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
       {state.success ? <p role="status" className="text-sm leading-6 text-muted-foreground">If this email belongs to an unverified password account, check your inbox for a verification link. Check spam too, or wait a minute before requesting another.</p> : null}
-      <button type="submit" disabled={pending || secondsLeft > 0} className="auth-primary-button">{pending ? "Sending…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Send verification email"}</button>
+      <Button type="submit" disabled={pending || secondsLeft > 0} className="h-11 w-full">{pending ? "Sending…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Send verification email"}</Button>
       <p className="text-center text-sm text-muted-foreground">Already verified? <Link href="/sign-in" className="auth-link">Sign in</Link></p>
     </form>
   );

@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 export default function DashboardPage() {
   return (
-    <div className="workspace-theme min-h-svh bg-background font-sans text-foreground">
+    <div className="min-h-svh bg-background font-sans text-foreground">
       <Suspense fallback={<p role="status" className="p-6 text-sm text-muted-foreground">Checking your session…</p>}>
         <DashboardSession />
       </Suspense>

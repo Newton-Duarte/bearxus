@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function ProfilePage() {
   return (
-    <div className="workspace-theme min-h-svh bg-background font-sans text-foreground">
+    <div className="min-h-svh bg-background font-sans text-foreground">
       <Suspense fallback={<p role="status" className="p-6 text-sm text-muted-foreground">Checking your session…</p>}>
         <ProfileSession />
       </Suspense>

@@ -1,16 +1,23 @@
-# Current Feature
+# Current Feature: shadcn/ui + Base UI Setup
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Configure shadcn/ui with the `base` / `base-nova` preset and Base UI primitives from the current `@base-ui/react` package.
+- Use pnpm as the package manager for the setup.
+- Integrate the custom theme CSS variables from the shadcn/create design playground.
+- Align Tailwind CSS configuration with Base UI utility structures and token mapping.
+- Standardize component composition on the `render` prop rather than Radix UI's legacy `asChild` pattern.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- The project uses Next.js v16; avoid outdated initialization, type, and composition patterns.
+- Feature specification: `context/features/shadcn-base-ui-config-spec.md`.
+- References: https://ui.shadcn.com and https://base-ui.com.
+- The current shadcn Base UI registry maps `base-nova` to `@base-ui/react`; generated components use its Base UI APIs and `render` composition.
 
 ## History
 

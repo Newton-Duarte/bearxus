@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 import { z } from "zod";
 
 import { AuthField } from "@/components/auth/AuthField";
+import { Button } from "@/components/ui/button";
 import { registrationSchema } from "@/lib/auth-validation";
 import type { AuthFormState } from "@/types/auth";
 
@@ -82,7 +83,7 @@ export function RegisterForm() {
       <AuthField name="password" label="Password" type="password" autoComplete="new-password" required hint="At least 8 characters, up to 72 UTF-8 bytes." error={state.fieldErrors?.password} />
       <AuthField name="confirmPassword" label="Confirm password" type="password" autoComplete="new-password" required error={state.fieldErrors?.confirmPassword} />
       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
-      <button type="submit" disabled={pending || navigating} className="auth-primary-button">{pending || navigating ? "Creating account…" : "Create account"}</button>
+      <Button type="submit" disabled={pending || navigating} className="h-11 w-full">{pending || navigating ? "Creating account…" : "Create account"}</Button>
       <p className="text-center text-sm text-muted-foreground">Already have an account? <Link href="/sign-in" className="auth-link">Sign in</Link></p>
     </form>
   );

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 
 import { AuthField } from "@/components/auth/AuthField";
+import { Button } from "@/components/ui/button";
 import type { PasswordResetFormState } from "@/types/password-reset";
 
 const initialState: PasswordResetFormState = { success: false, data: null, error: null };
@@ -86,7 +87,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <AuthField name="password" label="New password" type="password" autoComplete="new-password" required hint="At least 8 characters, up to 72 UTF-8 bytes." error={state.fieldErrors?.password} />
       <AuthField name="confirmPassword" label="Confirm new password" type="password" autoComplete="new-password" required error={state.fieldErrors?.confirmPassword} />
       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
-      <button type="submit" disabled={pending} className="auth-primary-button">{pending ? "Updating password…" : "Set new password"}</button>
+      <Button type="submit" disabled={pending} className="h-11 w-full">{pending ? "Updating password…" : "Set new password"}</Button>
       <p className="text-center text-sm text-muted-foreground"><Link href="/sign-in" className="auth-link">Back to sign in</Link></p>
     </form>
   );

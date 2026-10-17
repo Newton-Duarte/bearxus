@@ -10,7 +10,7 @@ interface AuthShellProps {
 export function AuthShell({ title, description, children }: AuthShellProps) {
   const titleId = `auth-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <div className="workspace-theme flex min-h-svh flex-col bg-background font-sans text-foreground">
+    <div className="flex min-h-svh flex-col bg-background font-sans text-foreground">
       <header className="px-6 py-7 sm:px-10">
         <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm text-xl font-semibold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
           <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">b</span>

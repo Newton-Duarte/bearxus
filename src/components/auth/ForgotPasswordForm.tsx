@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
 
 import { AuthField } from "@/components/auth/AuthField";
+import { Button } from "@/components/ui/button";
 import type { PasswordResetRequestState } from "@/types/password-reset";
 
 const initialState: PasswordResetRequestState = { success: false, data: null, error: null };
@@ -67,7 +68,7 @@ export function ForgotPasswordForm() {
       <AuthField name="email" label="Email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" error={state.fieldErrors?.email} />
       {state.error ? <p ref={alertRef} role="alert" tabIndex={-1} className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring">{state.error}</p> : null}
       {state.success ? <p role="status" className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm leading-6">If an account exists for that email, check your inbox and spam folder for a password reset link.</p> : null}
-      <button type="submit" disabled={pending || secondsLeft > 0} className="auth-primary-button">{pending ? "Sending…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Send reset link"}</button>
+      <Button type="submit" disabled={pending || secondsLeft > 0} className="h-11 w-full">{pending ? "Sending…" : secondsLeft > 0 ? `Try again in ${secondsLeft}s` : "Send reset link"}</Button>
       <p className="text-center text-sm text-muted-foreground">Remembered your password? <Link href="/sign-in" className="auth-link">Sign in</Link></p>
     </form>
   );
