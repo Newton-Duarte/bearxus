@@ -1,16 +1,21 @@
-# Current Feature
+# Current Feature: shadcn/ui + Base UI Setup
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Install the core shadcn/ui primitives using the configured Base UI (`base-nova`) architecture: button, card, dropdown-menu, dialog, sheet, select, input, label, separator, and tabs.
+- Use the modern `render` prop composition pattern instead of legacy Radix `asChild` composition.
+- Implement a type-safe, polymorphic `Text` primitive with semantic heading fallbacks and responsive typography variants.
+- Preserve Next.js v16 hydration/build compatibility and integrate the primitives with the existing purple OKLCH theme tokens.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Source spec: `context/features/shadcn-base-ui-primitives-spec.md`.
+- The repository is already configured for shadcn/ui `base-nova` with Base UI and existing purple light/dark OKLCH palettes.
+- Requested shadcn generation command: `pnpm dlx shadcn@latest add button card dropdown-menu dialog sheet select input label separator tabs`.
 
 ## History
 
