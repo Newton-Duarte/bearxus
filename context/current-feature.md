@@ -1,21 +1,16 @@
-# Current Feature: Integrate Unit Tests: Server Logic & Utility Unit Testing
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Standardize the isolated backend unit-testing layer on Vitest.
-- Add colocated `feature.test.ts` coverage for core server actions, mocking external dependencies and Next.js internals.
-- Use fake timers for time-dependent server-action logic.
-- Add lightweight Node-based examples covering pure utility functions, edge cases, and payload matrices.
-- Keep component rendering and browser-oriented testing out of scope; do not add `jsdom`, React Testing Library, or component-test dependencies.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Spec: `context/features/integrate-unit-tests-spec.md`.
-- Update relevant project context or documentation as needed.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -34,3 +29,4 @@ In Progress
 - 2026-10-17: Configured shadcn/ui `base-nova` with Base UI, added the generated Button component and `render`-compatible composition, consolidated global Tailwind v4 theme tokens, migrated auth actions, and added accessible purple light/dark OKLCH palettes. Verified shadcn configuration, lint, TypeScript, production build, browser theme switching, contrast ratios, and diff checks.
 - 2026-10-17: Added the Base UI `base-nova` core primitives and a type-safe polymorphic `Text` primitive with semantic heading fallbacks and CVA typography variants. Verified TypeScript, lint, production build, browser sign-in smoke with zero console errors, diff checks, and no legacy `asChild` usage.
 - 2026-10-17: Migrated authentication, profile, and dashboard UI to shared shadcn/Base UI primitives; added global `TextField`, removed `AuthField`, replaced native dialogs/account menu, standardized typography and OKLCH token styling, and removed legacy `@layer`/auth-link hooks. Verified lint, TypeScript, production build, diff checks, browser accessibility/responsive/interactions, theme interpolation, and protected-route behavior. Deferred the existing dashboard prerender warning and minor password-manager/live-region advisories.
+- 2026-10-17: Integrated a Node-only Vitest unit-testing layer with colocated coverage for auth server actions, registration and recovery route handlers, validation, redirects, and rate limiting. Added 11 test files with 114 passing tests, fake-timer and module-boundary mocking examples, and Vitest project guidance; hardened encoded callback rejection. Verified lint, TypeScript, production build, and diff checks. Live external integrations and browser/component testing remain out of scope.
