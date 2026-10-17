@@ -1,25 +1,16 @@
-# Current Feature: UI Component Migration & Audit
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Audit and update the targeted authentication pages and modular layout components to use the configured shadcn/ui, Base UI, and `Text` primitives.
-- Replace legacy form fields, cards, dialogs, menus, and layout structures with the available core primitives.
-- Standardize headings, helper text, labels, copy, and descriptions on the type-safe polymorphic `Text` primitive.
-- Ensure custom wrappers, triggers, and external-link mappings use Base UI’s `render` pattern instead of Radix `asChild`.
-- Remove residual hardcoded styling hooks and align all components with the custom purple OKLCH light/dark theme tokens.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Targeted pages: sign-in, register, forgot-password, reset-password, verify-email, profile, and dashboard.
-- Targeted components: `components/auth/*` forms and shell/field components, plus `ProfileActions`, `UserAvatar`, and `UserMenu`.
-- The application uses Next.js v16 and Tailwind CSS v4; do not use legacy `@layer` directives or deprecated utility declarations.
-- Approved architecture decision: replace the misleading auth-scoped field with a global `TextField` composite under `src/components/ui/`, built from the existing `Input`, `Label`, and `Text` primitives; keep `Input` as the low-level control and reserve a future generic `Field` composition for non-text controls.
-- Implementation plan: `docs/superpowers/plans/2026-10-17-ui-component-migration.md`.
-- Implementation and verification evidence: added global `TextField`, removed the obsolete `AuthField`, migrated auth/profile/dashboard consumers to Base UI/shadcn primitives and `Text`, replaced native profile dialogs and account menu, fixed Base UI native-button menu composition, removed the legacy `auth-link`/`@layer` styling hooks, and verified `pnpm lint`, TypeScript, production build, `git diff --check`, auth route rendering, field ID/ARIA behavior, 320px overflow, dropdown keyboard focus, dialog focus/escape behavior, sign-out, protected redirects, and light/dark token interpolation. Protected interaction checks used a synthetic development account on the development server; account deletion was not executed. The production server’s registration endpoint used the repository’s placeholder production database and returned 500, so authenticated checks were run only against development. The existing dashboard `crypto.getRandomValues()` prerender warning remains deferred.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -37,3 +28,4 @@ In Progress
 - 2026-10-16: Added Upstash Redis sliding-window rate limiting with fail-open behavior for registration, credentials login, password recovery, and verification resend; added 429/`Retry-After` API responses, protected retained Server Actions, and accessible frontend retry feedback. Denied requests use the configured full cooldown (15 minutes or 60 minutes) rather than the remaining sliding-window bucket. Verified live development HTTP/browser limits, neutral responses, mixed-case key normalization, fail-open behavior, cooldown messages/countdowns, lint, build, TypeScript, and diff checks. No database migration was needed; real provider delivery and production Upstash behavior remain unverified.
 - 2026-10-17: Configured shadcn/ui `base-nova` with Base UI, added the generated Button component and `render`-compatible composition, consolidated global Tailwind v4 theme tokens, migrated auth actions, and added accessible purple light/dark OKLCH palettes. Verified shadcn configuration, lint, TypeScript, production build, browser theme switching, contrast ratios, and diff checks.
 - 2026-10-17: Added the Base UI `base-nova` core primitives and a type-safe polymorphic `Text` primitive with semantic heading fallbacks and CVA typography variants. Verified TypeScript, lint, production build, browser sign-in smoke with zero console errors, diff checks, and no legacy `asChild` usage.
+- 2026-10-17: Migrated authentication, profile, and dashboard UI to shared shadcn/Base UI primitives; added global `TextField`, removed `AuthField`, replaced native dialogs/account menu, standardized typography and OKLCH token styling, and removed legacy `@layer`/auth-link hooks. Verified lint, TypeScript, production build, diff checks, browser accessibility/responsive/interactions, theme interpolation, and protected-route behavior. Deferred the existing dashboard prerender warning and minor password-manager/live-region advisories.
