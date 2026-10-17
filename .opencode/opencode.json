@@ -1,0 +1,7 @@
+{
+  "permission": {
+    "skill": {
+      "using-git-worktrees": "deny"
+    }
+  }
+}
