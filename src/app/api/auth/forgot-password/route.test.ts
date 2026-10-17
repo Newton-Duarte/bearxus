@@ -1,0 +1,106 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  checkAuthRateLimit: vi.fn(),
+  requestPasswordReset: vi.fn(),
+}));
+
+vi.mock("@/lib/password-reset", () => ({ requestPasswordReset: mocks.requestPasswordReset }));
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/rate-limit", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/rate-limit")>("@/lib/rate-limit");
+  return { ...actual, checkAuthRateLimit: mocks.checkAuthRateLimit };
+});
+
+import { POST } from "@/app/api/auth/forgot-password/route";
+
+function request(body: unknown): Request {
+  return new Request("http://localhost/api/auth/forgot-password", {
+    body: typeof body === "string" ? body : JSON.stringify(body),
+    headers: { "content-type": "application/json" },
+    method: "POST",
+  });
+}
+
+async function responseBody(response: Response): Promise<Record<string, unknown>> {
+  return await response.json() as Record<string, unknown>;
+}
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  mocks.checkAuthRateLimit.mockResolvedValue({ success: true, remaining: 2, reset: Date.now() + 1_000 });
+  mocks.requestPasswordReset.mockResolvedValue({ status: "sent", retryAfterSeconds: 60 });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe("POST /api/auth/forgot-password", () => {
+  it("returns a 400 response for invalid JSON", async () => {
+    const response = await POST(request("not-json"));
+
+    expect(response.status).toBe(400);
+    expect(await responseBody(response)).toEqual({ success: false, data: null, error: "Invalid JSON body." });
+  });
+
+  it("returns a neutral validation response for an invalid email", async () => {
+    const response = await POST(request({ email: "invalid" }));
+
+    expect(response.status).toBe(400);
+    expect(await responseBody(response)).toEqual({ success: false, data: null, error: "Enter a valid email address." });
+    expect(mocks.requestPasswordReset).not.toHaveBeenCalled();
+  });
+
+  it.each([{}, { email: "   " }, { email: 123 }])("keeps malformed payload %j neutral", async (body) => {
+    const response = await POST(request(body));
+
+    expect(response.status).toBe(400);
+    expect(await responseBody(response)).toEqual({ success: false, data: null, error: "Enter a valid email address." });
+    expect(mocks.requestPasswordReset).not.toHaveBeenCalled();
+  });
+
+  it("returns a 429 response when rate limited", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-17T12:00:00.000Z"));
+    mocks.checkAuthRateLimit.mockResolvedValue({
+      success: false,
+      remaining: 0,
+      reset: Date.now() + 3_600_000,
+      retryAfterSeconds: 3_600,
+    });
+
+    const response = await POST(request({ email: "user@example.com" }));
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("3600");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(await responseBody(response)).toEqual({ error: "Too many attempts. Please try again in 60 minutes." });
+  });
+
+  it("returns the service retry value without exposing account eligibility", async () => {
+    mocks.requestPasswordReset.mockResolvedValue({ status: "ineligible", retryAfterSeconds: 60 });
+
+    const response = await POST(request({ email: "user@example.com" }));
+
+    expect(response.status).toBe(200);
+    expect(await responseBody(response)).toEqual({
+      success: true,
+      data: { retryAfterSeconds: 60 },
+      error: null,
+    });
+  });
+
+  it("keeps reset-service failures neutral with the fallback cooldown", async () => {
+    mocks.requestPasswordReset.mockRejectedValue(new Error("database unavailable"));
+
+    const response = await POST(request({ email: "user@example.com" }));
+
+    expect(response.status).toBe(200);
+    expect(await responseBody(response)).toEqual({
+      success: true,
+      data: { retryAfterSeconds: 60 },
+      error: null,
+    });
+  });
+});

@@ -100,3 +100,10 @@ Example v4 configuration:
 - No commented-out code unless specified
 - No unused imports or variables
 - Keep functions under 50 lines when possible
+
+## Testing
+
+- Use Vitest for unit tests, with the Node environment by default.
+- Keep tests next to the source file using the `feature.test.ts` convention.
+- Mock external services, database access, and framework request-context modules at their boundaries with `vi.mock`.
+- Keep component rendering and browser-oriented dependencies out of the unit-test layer.
