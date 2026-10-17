@@ -73,10 +73,15 @@ Example v4 configuration:
 
 ## Database
 
-- Use Drizzle ORM for all database operations
-- Always use `drizzle-kit generate` to create migration files from schema changes (avoid `drizzle-kit push` in production)
-- Verify migration files are generated and in sync before committing
-- Production deployments must run database migration scripts before the app starts
+- **ORM & Migrations**: Use Drizzle ORM for all database operations. Always use `drizzle-kit generate` to create migration files from schema changes (never use `drizzle-kit push` in production environment workflows).
+- **Explicit Migration Naming**: You must always provide a clear, descriptive name using the `--name` flag when generating migrations.
+  - **Format**: Use snake_case (e.g. `--name=add_users_table`).
+  - **Convention**: Start with an action verb (e.g., `create_`, `add_`, `modify_`, `drop_`, `fix_`).
+  - **Example**: `drizzle-kit generate --name=create_posts_table`
+- **Custom Migrations**: For manual data seeds or raw SQL adjustments, explicitly use the `--custom` flag paired with a name: `drizzle-kit generate --custom --name=seed_initial_roles`.
+- **Validation**: Verify migration files are generated and in sync before completing a task or committing code.
+- **Deployment**: Production deployments must run database migration scripts before the application starts.
+
 
 ## Data Fetching
 
