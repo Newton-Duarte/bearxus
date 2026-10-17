@@ -1,21 +1,16 @@
-# Current Feature: shadcn/ui + Base UI Setup
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Install the core shadcn/ui primitives using the configured Base UI (`base-nova`) architecture: button, card, dropdown-menu, dialog, sheet, select, input, label, separator, and tabs.
-- Use the modern `render` prop composition pattern instead of legacy Radix `asChild` composition.
-- Implement a type-safe, polymorphic `Text` primitive with semantic heading fallbacks and responsive typography variants.
-- Preserve Next.js v16 hydration/build compatibility and integrate the primitives with the existing purple OKLCH theme tokens.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Source spec: `context/features/shadcn-base-ui-primitives-spec.md`.
-- The repository is already configured for shadcn/ui `base-nova` with Base UI and existing purple light/dark OKLCH palettes.
-- Requested shadcn generation command: `pnpm dlx shadcn@latest add button card dropdown-menu dialog sheet select input label separator tabs`.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -32,3 +27,4 @@ In Progress
 - 2026-10-16: Refined the profile password-change UX to match the existing auth forms: generic errors are top-of-form focusable alerts, controlled fields preserve values across validation/server errors, sensitive values clear when the dialog closes, and modal scroll chaining is contained. Verified browser preservation/error checks, lint, TypeScript, production build, and diff checks.
 - 2026-10-16: Added Upstash Redis sliding-window rate limiting with fail-open behavior for registration, credentials login, password recovery, and verification resend; added 429/`Retry-After` API responses, protected retained Server Actions, and accessible frontend retry feedback. Denied requests use the configured full cooldown (15 minutes or 60 minutes) rather than the remaining sliding-window bucket. Verified live development HTTP/browser limits, neutral responses, mixed-case key normalization, fail-open behavior, cooldown messages/countdowns, lint, build, TypeScript, and diff checks. No database migration was needed; real provider delivery and production Upstash behavior remain unverified.
 - 2026-10-17: Configured shadcn/ui `base-nova` with Base UI, added the generated Button component and `render`-compatible composition, consolidated global Tailwind v4 theme tokens, migrated auth actions, and added accessible purple light/dark OKLCH palettes. Verified shadcn configuration, lint, TypeScript, production build, browser theme switching, contrast ratios, and diff checks.
+- 2026-10-17: Added the Base UI `base-nova` core primitives and a type-safe polymorphic `Text` primitive with semantic heading fallbacks and CVA typography variants. Verified TypeScript, lint, production build, browser sign-in smoke with zero console errors, diff checks, and no legacy `asChild` usage.
