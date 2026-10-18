@@ -4,30 +4,33 @@ import { Suspense } from "react";
 
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { AuthorizedApplications } from "@/components/profile/AuthorizedApplications";
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
 import { UserAvatar } from "@/components/user/UserAvatar";
 import { getProfileData } from "@/lib/profile";
+import { getProfileApplicationError } from "@/lib/profile-errors";
 
 export const metadata = {
   title: "Profile · Bearxus",
 };
 
-export default function ProfilePage() {
+export default function ProfilePage({ searchParams }: PageProps<"/profile">) {
   return (
     <div className="min-h-svh bg-background font-sans text-foreground">
         <Suspense fallback={<Text as="p" variant="muted" role="status" className="p-6">Checking your session…</Text>}>
-        <ProfileSession />
+        <ProfileSession searchParams={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function ProfileSession() {
+async function ProfileSession({ searchParams }: Pick<PageProps<"/profile">, "searchParams">) {
   await connection();
   const session = await auth();
+  const params = await searchParams;
 
   if (!session?.user?.id) {
     redirect("/sign-in?callbackUrl=%2Fprofile");
@@ -89,6 +92,11 @@ async function ProfileSession() {
               </dl>
             </Card>
           </section>
+
+          <AuthorizedApplications
+            applications={profile.authorizedApplications}
+            applicationError={getProfileApplicationError(params.error, params.provider)}
+          />
 
           <Separator className="mt-10" />
           <section aria-labelledby="security-heading" className="pt-8">

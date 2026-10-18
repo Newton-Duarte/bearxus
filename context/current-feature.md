@@ -1,16 +1,24 @@
-# Current Feature
+# Current Feature: Add Authorized Applications to Profile
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Add an “Authorized applications” block to the protected `/profile` page.
+- Explain that the block lists OAuth applications approved to connect to the user’s account.
+- Show the supported GitHub provider and its current linked/unlinked state using the existing Auth.js account data.
+- Keep account linking within the existing authentication flow and preserve safe handling for Auth.js `OAuthAccountNotLinked` cases.
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- GitHub is the only supported OAuth provider today.
+- Match the existing dark-first profile UI and shared shadcn/Base UI styling.
+- This feature should not require a database schema change.
+- Reference: https://authjs.dev/reference/core/errors#oauthaccountnotlinked
+- Keep the OAuth provider list allowlisted and extensible without introducing a provider framework before a second provider is needed.
+- For connected applications, show the purple Connected status inline with the description and keep only the Disconnect action on the right.
 
 ## History
 

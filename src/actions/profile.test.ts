@@ -4,18 +4,37 @@ const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   compare: vi.fn(),
   deleteUser: vi.fn(),
+  deleteReturning: vi.fn(),
   deleteWhere: vi.fn(),
   findFirst: vi.fn(),
   hash: vi.fn(),
+  redirect: vi.fn(),
+  revalidatePath: vi.fn(),
   set: vi.fn(),
+  signIn: vi.fn(),
   signOut: vi.fn(),
+  sql: vi.fn(),
   update: vi.fn(),
   updateReturning: vi.fn(),
   updateWhere: vi.fn(),
 }));
 
 vi.mock("bcryptjs", () => ({ compare: mocks.compare, hash: mocks.hash }));
-vi.mock("@/auth", () => ({ auth: mocks.auth, signOut: mocks.signOut }));
+vi.mock("@/auth", () => ({ auth: mocks.auth, signIn: mocks.signIn, signOut: mocks.signOut }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
+vi.mock("next-auth", () => {
+  class AuthError extends Error {
+    type: string;
+
+    constructor(message: string, type = "AuthError") {
+      super(message);
+      this.type = type;
+    }
+  }
+
+  return { AuthError };
+});
 vi.mock("@/db", () => ({
   db: {
     delete: mocks.deleteUser,
@@ -23,17 +42,24 @@ vi.mock("@/db", () => ({
     update: mocks.update,
   },
 }));
-vi.mock("@/db/schema", () => ({ users: { id: "id", passwordHash: "passwordHash" } }));
+vi.mock("@/db/schema", () => ({
+  accounts: { provider: "provider", userId: "userId" },
+  users: { id: "id", passwordHash: "passwordHash" },
+}));
 vi.mock("drizzle-orm", () => ({
   and: vi.fn(),
   eq: vi.fn(),
   isNotNull: vi.fn(),
+  sql: mocks.sql,
 }));
 
-import { changePassword, deleteAccount } from "@/actions/profile";
-import type { ChangePasswordState } from "@/types/profile";
+import { AuthError } from "next-auth";
+
+import { changePassword, connectOAuthProvider, deleteAccount, unlinkOAuthProvider } from "@/actions/profile";
+import type { ChangePasswordState, UnlinkProviderState } from "@/types/profile";
 
 const previousState: ChangePasswordState = { success: false, error: null };
+const previousUnlinkState: UnlinkProviderState = { success: false, error: null };
 
 function formData(values: Record<string, string>): FormData {
   const form = new FormData();
@@ -57,9 +83,50 @@ beforeEach(() => {
   mocks.updateWhere.mockReturnValue({ returning: mocks.updateReturning });
   mocks.set.mockReturnValue({ where: mocks.updateWhere });
   mocks.update.mockReturnValue({ set: mocks.set });
-  mocks.deleteWhere.mockResolvedValue(undefined);
+  mocks.deleteReturning.mockResolvedValue([{ provider: "github" }]);
+  mocks.deleteWhere.mockReturnValue({ returning: mocks.deleteReturning });
   mocks.deleteUser.mockReturnValue({ where: mocks.deleteWhere });
   mocks.signOut.mockResolvedValue(undefined);
+  mocks.signIn.mockResolvedValue(undefined);
+  mocks.redirect.mockImplementation((path: string) => {
+    throw new Error(`REDIRECT:${path}`);
+  });
+});
+
+describe("connectOAuthProvider", () => {
+  it("redirects an expired session to sign-in without starting OAuth", async () => {
+    mocks.auth.mockResolvedValue(null);
+
+    await expect(connectOAuthProvider("github", new FormData())).rejects.toThrow("REDIRECT:/sign-in?callbackUrl=%2Fprofile");
+
+    expect(mocks.signIn).not.toHaveBeenCalled();
+  });
+
+  it("starts the GitHub OAuth flow for an authenticated session", async () => {
+    await connectOAuthProvider("github", new FormData());
+
+    expect(mocks.signIn).toHaveBeenCalledWith("github", { redirectTo: "/profile" });
+  });
+
+  it("maps OAuthAccountNotLinked to a safe profile error", async () => {
+    const oauthError = Object.assign(new AuthError("not linked"), { type: "OAuthAccountNotLinked" });
+    mocks.signIn.mockRejectedValue(oauthError);
+
+    await expect(connectOAuthProvider("github", new FormData())).rejects.toThrow("REDIRECT:/profile?error=OAuthAccountNotLinked&provider=github");
+  });
+
+  it("rethrows unexpected connection failures", async () => {
+    const failure = new Error("provider unavailable");
+    mocks.signIn.mockRejectedValue(failure);
+
+    await expect(connectOAuthProvider("github", new FormData())).rejects.toBe(failure);
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unsupported provider before starting OAuth", async () => {
+    await expect(connectOAuthProvider("google", new FormData())).rejects.toThrow("REDIRECT:/profile?error=OAuthSignin");
+    expect(mocks.signIn).not.toHaveBeenCalled();
+  });
 });
 
 describe("changePassword", () => {
@@ -143,5 +210,45 @@ describe("deleteAccount", () => {
     expect(mocks.deleteUser).toHaveBeenCalled();
     expect(mocks.deleteWhere).toHaveBeenCalled();
     expect(mocks.signOut).toHaveBeenCalledWith({ redirectTo: "/sign-in?deleted=1" });
+  });
+});
+
+describe("unlinkOAuthProvider", () => {
+  it("rejects an expired unlink request before querying accounts", async () => {
+    mocks.auth.mockResolvedValue(null);
+
+    await expect(unlinkOAuthProvider("github", previousUnlinkState, new FormData())).resolves.toEqual({
+      success: false,
+      error: "Your session has expired. Sign in again.",
+    });
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it("removes GitHub and refreshes the profile after a guarded delete succeeds", async () => {
+    const result = await unlinkOAuthProvider("github", previousUnlinkState, new FormData());
+
+    expect(result).toEqual({ success: true, error: null });
+    expect(mocks.deleteUser).toHaveBeenCalled();
+    expect(mocks.sql).toHaveBeenCalled();
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/profile");
+  });
+
+  it("returns a controlled error when GitHub is missing or is the only sign-in method", async () => {
+    mocks.deleteReturning.mockResolvedValue([]);
+
+    await expect(unlinkOAuthProvider("github", previousUnlinkState, new FormData())).resolves.toEqual({
+      success: false,
+      error: "GitHub is not connected or is your only sign-in method.",
+    });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("converts database failures to a controlled error", async () => {
+    mocks.deleteReturning.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(unlinkOAuthProvider("github", previousUnlinkState, new FormData())).resolves.toEqual({
+      success: false,
+      error: "Unable to disconnect GitHub right now.",
+    });
   });
 });

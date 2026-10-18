@@ -3,6 +3,7 @@ import "server-only";
 import { count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
+import { OAUTH_PROVIDER_IDS } from "@/lib/oauth-providers";
 import {
   learningResources,
   notes,
@@ -10,11 +11,12 @@ import {
   tasks,
   transactions,
   users,
+  accounts,
 } from "@/db/schema";
 import type { ProfileData } from "@/types/profile";
 
 export async function getProfileData(userId: string): Promise<ProfileData | null> {
-  const [user, [noteCount], [projectCount], [taskCount], [resourceCount], [transactionCount]] = await Promise.all([
+  const [user, linkedAccounts, [noteCount], [projectCount], [taskCount], [resourceCount], [transactionCount]] = await Promise.all([
     db.query.users.findFirst({
       columns: {
         name: true,
@@ -25,6 +27,7 @@ export async function getProfileData(userId: string): Promise<ProfileData | null
       },
       where: eq(users.id, userId),
     }),
+    db.select({ provider: accounts.provider }).from(accounts).where(eq(accounts.userId, userId)),
     db.select({ total: count() }).from(notes).where(eq(notes.userId, userId)),
     db.select({ total: count() }).from(projects).where(eq(projects.userId, userId)),
     db.select({ total: count() }).from(tasks).where(eq(tasks.userId, userId)),
@@ -34,6 +37,9 @@ export async function getProfileData(userId: string): Promise<ProfileData | null
 
   if (!user) return null;
 
+  const linkedProviderIds = new Set(linkedAccounts.map(account => account.provider));
+  const hasAlternativeSignIn = user.passwordHash !== null || linkedAccounts.length > 1;
+
   return {
     user: {
       name: user.name,
@@ -42,6 +48,11 @@ export async function getProfileData(userId: string): Promise<ProfileData | null
       createdAt: user.createdAt,
       canChangePassword: user.passwordHash !== null,
     },
+    authorizedApplications: OAUTH_PROVIDER_IDS.map(provider => ({
+      provider,
+      connected: linkedProviderIds.has(provider),
+      canDisconnect: hasAlternativeSignIn,
+    })),
     stats: {
       notes: Number(noteCount.total),
       projects: Number(projectCount.total),

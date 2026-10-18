@@ -1,9 +1,17 @@
+import type { OAuthProviderId } from "@/lib/oauth-providers";
+
 export interface ProfileStats {
   notes: number;
   projects: number;
   tasks: number;
   resources: number;
   transactions: number;
+}
+
+export interface AuthorizedApplication {
+  provider: OAuthProviderId;
+  connected: boolean;
+  canDisconnect: boolean;
 }
 
 export interface ProfileData {
@@ -14,6 +22,7 @@ export interface ProfileData {
     createdAt: Date;
     canChangePassword: boolean;
   };
+  authorizedApplications: AuthorizedApplication[];
   stats: ProfileStats;
 }
 
@@ -25,7 +34,17 @@ export interface ChangePasswordState {
   >;
 }
 
+export interface UnlinkProviderState {
+  success: boolean;
+  error: string | null;
+}
+
 export const initialChangePasswordState: ChangePasswordState = {
+  success: false,
+  error: null,
+};
+
+export const initialUnlinkProviderState: UnlinkProviderState = {
   success: false,
   error: null,
 };
