@@ -1,24 +1,16 @@
-# Current Feature: Add Authorized Applications to Profile
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add an “Authorized applications” block to the protected `/profile` page.
-- Explain that the block lists OAuth applications approved to connect to the user’s account.
-- Show the supported GitHub provider and its current linked/unlinked state using the existing Auth.js account data.
-- Keep account linking within the existing authentication flow and preserve safe handling for Auth.js `OAuthAccountNotLinked` cases.
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- GitHub is the only supported OAuth provider today.
-- Match the existing dark-first profile UI and shared shadcn/Base UI styling.
-- This feature should not require a database schema change.
-- Reference: https://authjs.dev/reference/core/errors#oauthaccountnotlinked
-- Keep the OAuth provider list allowlisted and extensible without introducing a provider framework before a second provider is needed.
-- For connected applications, show the purple Connected status inline with the description and keep only the Disconnect action on the right.
+<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -40,3 +32,4 @@ In Progress
 - 2026-10-17: Integrated a Node-only Vitest unit-testing layer with colocated coverage for auth server actions, registration and recovery route handlers, validation, redirects, and rate limiting. Added 11 test files with 114 passing tests, fake-timer and module-boundary mocking examples, and Vitest project guidance; hardened encoded callback rejection. Verified lint, TypeScript, production build, and diff checks. Live external integrations and browser/component testing remain out of scope.
 - 2026-10-17: Expanded Vitest coverage for auth authorization, NextAuth and verification routes, email delivery, verification and password-reset token lifecycles, and profile data scoping. Added V8 coverage reporting while excluding declarative `auth.config.ts`. Verified 19 test files with 180 passing tests, 96.8% statement coverage, 92.34% branch coverage, 97.31% line coverage, lint, TypeScript, and production build.
 - 2026-10-17: Consolidated password-reset completion between the Server Action and API route, centralized recovery cooldown/retry values, extracted typed Zod field-error mapping using Zod v4 `$ZodIssueBase`, and verified lint, TypeScript, production build, and 187 passing Vitest tests.
+- 2026-10-18: Added the protected `/profile` Authorized applications section with an allowlisted, extensible OAuth provider registry, GitHub connect/disconnect actions, last-sign-in-method protection, safe `OAuthAccountNotLinked` handling, confirmation dialog, and inline connected status layout. No schema change. Verified 204 Vitest tests, lint, TypeScript, production build, diff checks, responsive browser UI, and safe error states. Live GitHub OAuth callback remains unverified.
